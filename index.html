@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daje · Games & Fun</title>
+    <script src="https://cdn.jsdelivr.net/gh/csmittee/janishammer-central@main/js/injector.js"></script>
+    <style>
+        :root {
+            --j-primary: #9C89B8;
+            --j-secondary: #F0A6CA;
+        }
+        .test-product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-card {
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+        .test-card video {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+        }
+        .test-nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        .test-nav-links a {
+            color: var(--j-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        .test-nav-links a:hover {
+            background: var(--j-primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-nav-links">
+        <a href="https://janishammer.com">Home</a>
+        <a href="https://flow.janishammer.com">Janis Flow</a>
+        <a href="https://jade.janishammer.com">Jade Coffee</a>
+        <a href="https://daje.janishammer.com">Daje Games</a>
+        <a href="https://janishammer.com/contact">Contact</a>
+    </div>
+
+    <div style="text-align: center; padding: 2rem;">
+        <h1>🎮 Daje Games</h1>
+        <p>Claw machines · Arcade · Fun</p>
+    </div>
+
+    <div class="test-product-grid">
+        <div class="test-card">
+            <video autoplay loop muted playsinline>
+                <source src="https://res.cloudinary.com/dfiomi0lb/video/upload/v1773607213/Dajequeencatcher.mp4" type="video/mp4">
+            </video>
+            <h2>Deluxe Claw Machine</h2>
+            <p>Professional grade, LED lights, adjustable claw</p>
+            <p><strong>฿45,000</strong></p>
+            <button class="j-btn" onclick="alert('Product details would open here')">View Details</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('✅ daje-queencatcher page loaded');
+        if (window.validateJanishammer) {
+            setTimeout(() => window.validateJanishammer(), 500);
+        }
+    </script>
+</body>
+</html>
