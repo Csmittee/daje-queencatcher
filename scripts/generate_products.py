@@ -40,7 +40,6 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             padding: 1rem;
         }}
         
-        /* Floating Cart Button */
         .cart-floating {{
             position: fixed;
             bottom: 2rem;
@@ -776,6 +775,8 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                     </div>
                 </div>
                 
+                {options_html}
+                
                 <div class="quantity-selector">
                     <h3>Quantity</h3>
                     <div class="quantity-control">
@@ -862,6 +863,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         let cart = JSON.parse(localStorage.getItem('dajeCart')) || [];
         let currentColor = '{default_color}';
         let currentQuantity = 1;
+        let currentOption = '';
         
         const currentProduct = {{
             id: '{slug}',
@@ -880,9 +882,11 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         }}
         
         function addToCart() {{
+            const variant = currentOption ? currentColor + ' · ' + currentOption : currentColor;
             const existingItem = cart.find(item => 
                 item.id === currentProduct.id && 
-                item.color === currentColor
+                item.color === currentColor &&
+                item.option === currentOption
             );
             
             if (existingItem) {{
@@ -894,6 +898,8 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                     price: currentProduct.price,
                     image: currentProduct.image,
                     color: currentColor,
+                    option: currentOption,
+                    variant: variant,
                     quantity: currentQuantity
                 }});
             }}
@@ -921,7 +927,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                         <img src="${{item.image}}" class="cart-item-image">
                         <div class="cart-item-details">
                             <div class="cart-item-name">${{item.name}}</div>
-                            <div class="cart-item-variant">${{item.color}}</div>
+                            <div class="cart-item-variant">${{item.variant}}</div>
                             <div class="cart-item-price">฿${{item.price.toLocaleString()}}</div>
                         </div>
                         <div class="cart-item-actions">
@@ -959,7 +965,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             }}
             
             let itemsList = cart.map(item => 
-                `${{item.name}} (${{item.color}}) x ${{item.quantity}} = ฿${{(item.price * item.quantity).toLocaleString()}}`
+                `${{item.name}} (${{item.variant}}) x ${{item.quantity}} = ฿${{(item.price * item.quantity).toLocaleString()}}`
             ).join('\\n');
             
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1015,6 +1021,12 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             currentColor = color;
         }}
         
+        function selectOption(element, option) {{
+            document.querySelectorAll('.size-btn').forEach(s => s.classList.remove('selected'));
+            element.classList.add('selected');
+            currentOption = option;
+        }}
+        
         function toggleWishlist(btn) {{
             const icon = btn.querySelector('i');
             if (icon.classList.contains('far')) {{
@@ -1064,7 +1076,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         const track = document.getElementById('sliderTrack');
         if (track && recommendations.length) {{
             track.innerHTML = recommendations.map(rec => `
-                <div class="recommend-card" onclick="location.href='/product/${{rec.slug}}.html'">
+                <div class="recommend-card" onclick="location.href='/${{rec.slug}}.html'">
                     <img src="${{rec.image}}" class="recommend-card-image">
                     <div class="recommend-card-info">
                         <div class="recommend-card-name">${{rec.name}}</div>
@@ -1078,6 +1090,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         
         window.changeImage = changeImage;
         window.selectColor = selectColor;
+        window.selectOption = selectOption;
         window.updateQuantity = updateQuantity;
         window.addToCart = addToCart;
         window.toggleWishlist = toggleWishlist;
@@ -1108,12 +1121,28 @@ def main():
     products_json = []
     
     for product in products:
-        slug = product['slug']
+        # Map CSV fields (16-field structure)
+        slug = product['id']
         name = product['name']
+        brand = product.get('brand', 'Daje Games')
+        category = product.get('category', 'Claw Machine')
         price = int(product['price'])
-        description = product['description']
-        main_image = product['image_url']
-        stock = product['stock']
+        main_image = product['main_image']
+        
+        # Split comma-separated fields
+        gallery_list = [img.strip() for img in product['gallery_images'].split(',') if img.strip()]
+        color_list = [c.strip() for c in product['colors'].split(',') if c.strip()]
+        color_hex_list = [h.strip() for h in product['color_hex'].split(',') if h.strip()] if product.get('color_hex') else []
+        options_list = [o.strip() for o in product['options'].split(',') if o.strip()] if product.get('options') else []
+        features_list = [f.strip() for f in product['feature_details'].split(',') if f.strip()]
+        
+        stock = product['stock_status']
+        description = product['full_description']
+        collection = product.get('collection', '')
+        
+        # Thai fields (for future bilingual support)
+        name_th = product.get('name_th', '')
+        description_th = product.get('full_description_th', '')
         
         # Stock text mapping
         stock_map = {
@@ -1123,37 +1152,45 @@ def main():
         }
         stock_text = stock_map.get(stock, 'In Stock')
         
-        # Split gallery images
-        gallery_list = [img.strip() for img in product['gallery'].split(',') if img.strip()]
+        # Generate thumbnails HTML
         thumbnails = '\n'.join([
             f'<img src="{img}" class="thumbnail {"active" if i == 0 else ""}" onclick="changeImage(this.src)">'
             for i, img in enumerate(gallery_list)
-        ])
+        ]) if gallery_list else '<div class="thumbnail-placeholder">No additional images</div>'
         
-        # Split features
-        features_list = [f.strip() for f in product['features'].split(',') if f.strip()]
+        # Generate features HTML
         features_html = '\n'.join([
             f'<li><i class="fas fa-check-circle"></i> {f}</li>'
             for f in features_list
         ])
         
-        # Color options
-        colors = [c.strip() for c in product['color_options'].split(',') if c.strip()]
-        default_color = colors[0] if colors else "Black"
+        # Generate color swatches HTML
+        default_color = color_list[0] if color_list else "Black"
         color_swatches = '\n'.join([
-            f'<div class="color-swatch {"selected" if i == 0 else ""}" style="background: {c}" data-color="{c}" onclick="selectColor(this, \'{c}\')"></div>'
-            for i, c in enumerate(colors)
+            f'<div class="color-swatch {"selected" if i == 0 else ""}" style="background: {color_hex_list[i] if i < len(color_hex_list) else c}" data-color="{c}" onclick="selectColor(this, \'{c}\')"></div>'
+            for i, c in enumerate(color_list)
         ])
+        
+        # Generate options buttons HTML
+        options_html = ''
+        if options_list:
+            options_html = f'''
+            <div class="size-options">
+                <h3>Options</h3>
+                <div class="size-buttons">
+                    {"".join([f'<div class="size-btn {"selected" if i == 0 else ""}" data-option="{o}" onclick="selectOption(this, \'{o}\')">{o}</div>' for i, o in enumerate(options_list)])}
+                </div>
+            </div>'''
         
         # Generate recommendations (all other products)
         recommendations = []
         for other in products:
-            if other['slug'] != slug:
+            if other['id'] != slug:
                 recommendations.append({
-                    'slug': other['slug'],
+                    'slug': other['id'],
                     'name': other['name'],
                     'price': int(other['price']),
-                    'image': other['image_url']
+                    'image': other['main_image']
                 })
         
         recommendations_html = '\n'.join([
@@ -1176,6 +1213,7 @@ def main():
             thumbnails=thumbnails,
             features_html=features_html,
             color_swatches=color_swatches,
+            options_html=options_html,
             default_color=default_color,
             stock=stock,
             stock_text=stock_text,
@@ -1193,15 +1231,20 @@ def main():
         products_json.append({
             'id': slug,
             'name': name,
-            'brand': 'Daje Games',
-            'category': 'Claw Machine',
+            'brand': brand,
+            'category': category,
             'price': price,
             'description': description,
             'main_image': main_image,
             'gallery_images': gallery_list,
-            'colors': colors,
+            'colors': color_list,
+            'color_hex': color_hex_list,
+            'options': options_list,
             'stock_status': stock_text,
-            'stock_code': stock
+            'stock_code': stock,
+            'collection': collection,
+            'name_th': name_th,
+            'description_th': description_th
         })
     
     # Write products.json for main page
