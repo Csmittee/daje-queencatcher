@@ -28,6 +28,14 @@
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             min-height: 100vh;
         }
+
+   
+        /* ... existing styles ... */
+        
+        /* Daje-specific: reduce dark overlay */
+        body::before {
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
         
         .cart-floating {
             position: fixed;
