@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import csv
+import json
 import os
 
 # Paths
 PRODUCTS_DIR = "."
 CSV_FILE = "products.csv"
+JSON_FILE = "products.json"
 
 # ===== PRODUCT PAGE TEMPLATE =====
 PRODUCT_TEMPLATE = """<!DOCTYPE html>
@@ -19,6 +21,10 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
     
     <!-- Google Fonts - Quicksand for Daje -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- INJECTORS -->
+    <script src="https://assets.janishammer.com/js/injector-core.js"></script>
+    <script src="https://assets.janishammer.com/js/injector-config.js"></script>
     
     <style>
         * {{
@@ -902,7 +908,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             
             if (cart.length === 0) {{
                 container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #888;">Your cart is empty</div>';
-                cartTotal.innerText = '฿0';
+                if (cartTotal) cartTotal.innerText = '฿0';
                 return;
             }}
             
@@ -928,7 +934,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                 `;
             }}).join('');
             
-            cartTotal.innerText = `฿${{total.toLocaleString()}}`;
+            if (cartTotal) cartTotal.innerText = `฿${{total.toLocaleString()}}`;
         }}
         
         function updateCartItem(index, change) {{
@@ -968,215 +974,4 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             );
             
             closeCart();
-            window.location.href = `mailto:info@daje.janishammer.com?subject=${{subject}}&body=${{body}}`;
-            showToast('Opening email client...');
-        }}
-        
-        function showToast(message) {{
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {{
-                toast.classList.remove('show');
-            }}, 2000);
-        }}
-        
-        function openCart() {{
-            document.getElementById('cartModal').classList.add('active');
-            renderCartItems();
-        }}
-        
-        function closeCart() {{
-            document.getElementById('cartModal').classList.remove('active');
-        }}
-        
-        function closeQuotationModal() {{
-            document.getElementById('quotationModal').classList.remove('active');
-        }}
-        
-        function updateQuantity(change) {{
-            const input = document.getElementById('quantity');
-            let newVal = currentQuantity + change;
-            if (newVal >= 1 && newVal <= 99) {{
-                currentQuantity = newVal;
-                input.value = currentQuantity;
-            }}
-        }}
-        
-        function selectColor(element, color) {{
-            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-            element.classList.add('selected');
-            currentColor = color;
-        }}
-        
-        function toggleWishlist(btn) {{
-            const icon = btn.querySelector('i');
-            if (icon.classList.contains('far')) {{
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                showToast('Added to wishlist');
-            }} else {{
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                showToast('Removed from wishlist');
-            }}
-        }}
-        
-        function changeImage(src) {{
-            document.getElementById('mainImage').src = src;
-            document.querySelectorAll('.thumbnail').forEach(thumb => {{
-                thumb.classList.remove('active');
-                if (thumb.src === src) thumb.classList.add('active');
-            }});
-        }}
-        
-        function openLightbox() {{
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
-            lightboxImg.src = document.getElementById('mainImage').src;
-            lightbox.classList.add('active');
-        }}
-        
-        function closeLightbox() {{
-            document.getElementById('lightbox').classList.remove('active');
-        }}
-        
-        function scrollSlider(direction) {{
-            const track = document.getElementById('sliderTrack');
-            const scrollAmount = track.clientWidth * 0.8;
-            track.scrollBy({{ left: direction * scrollAmount, behavior: 'smooth' }});
-        }}
-        
-        document.getElementById('cartFloating').addEventListener('click', openCart);
-        document.getElementById('mainImageContainer').addEventListener('click', openLightbox);
-        document.getElementById('zoomIcon').addEventListener('click', (e) => {{
-            e.stopPropagation();
-            openLightbox();
-        }});
-        
-        // Initialize recommendations
-        const track = document.getElementById('sliderTrack');
-        track.innerHTML = recommendations.map(rec => `
-            <div class="recommend-card" onclick="location.href='/product/${{rec.slug}}.html'">
-                <img src="${{rec.image}}" class="recommend-card-image">
-                <div class="recommend-card-info">
-                    <div class="recommend-card-name">${{rec.name}}</div>
-                    <div class="recommend-card-price">฿${{rec.price.toLocaleString()}}</div>
-                </div>
-            </div>
-        `).join('');
-        
-        updateCartUI();
-        
-        window.changeImage = changeImage;
-        window.selectColor = selectColor;
-        window.updateQuantity = updateQuantity;
-        window.addToCart = addToCart;
-        window.toggleWishlist = toggleWishlist;
-        window.openLightbox = openLightbox;
-        window.closeLightbox = closeLightbox;
-        window.openCart = openCart;
-        window.closeCart = closeCart;
-        window.closeQuotationModal = closeQuotationModal;
-        window.updateCartItem = updateCartItem;
-        window.removeCartItem = removeCartItem;
-        window.requestQuotation = requestQuotation;
-        window.scrollSlider = scrollSlider;
-    </script>
-</body>
-</html>"""
-
-def main():
-    print("🚀 Generating product pages from CSV...")
-    
-    # Read products from CSV
-    products = []
-    with open(CSV_FILE, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            products.append(row)
-    
-    # Generate each product page
-    for product in products:
-        slug = product['slug']
-        name = product['name']
-        price = int(product['price'])
-        main_image = product['image_url']
-        
-        # Split gallery images
-        gallery_list = product['gallery'].split(',') if product['gallery'] else []
-        thumbnails = '\n'.join([
-            f'<img src="{img.strip()}" class="thumbnail {"active" if i == 0 else ""}" onclick="changeImage(this.src)">'
-            for i, img in enumerate(gallery_list)
-        ])
-        
-        # Split features
-        features_list = product['features'].split(',')
-        features_html = '\n'.join([
-            f'<li><i class="fas fa-check-circle"></i> {f.strip()}</li>'
-            for f in features_list
-        ])
-        
-        # Color options
-        colors = product['color_options'].split(',')
-        default_color = colors[0].strip()
-        color_swatches = '\n'.join([
-            f'<div class="color-swatch {"selected" if i == 0 else ""}" style="background: {c.strip()}" data-color="{c.strip()}" onclick="selectColor(this, \'{c.strip()}\')"></div>'
-            for i, c in enumerate(colors)
-        ])
-        
-        # Stock status text
-        stock_map = {
-            'in-stock': 'In Stock · Ready to Ship',
-            'pre-order': 'Pre-Order · Reserve Now',
-            'out-stock': 'Out of Stock · Contact Us'
-        }
-        stock_text = stock_map.get(product['stock'], 'In Stock')
-        
-        # Generate recommendations (all other products)
-        recommendations = []
-        for other in products:
-            if other['slug'] != slug:
-                recommendations.append({
-                    'slug': other['slug'],
-                    'name': other['name'],
-                    'price': int(other['price']),
-                    'image': other['image_url']
-                })
-        
-        recommendations_html = '\n'.join([
-            f'<div class="recommend-card" onclick="location.href=\'/product/{rec["slug"]}.html\'">'
-            f'<img src="{rec["image"]}" class="recommend-card-image">'
-            f'<div class="recommend-card-info">'
-            f'<div class="recommend-card-name">{rec["name"]}</div>'
-            f'<div class="recommend-card-price">฿{rec["price"]:,}</div>'
-            f'</div></div>'
-            for rec in recommendations
-        ])
-        
-        # Generate the page
-        page_html = PRODUCT_TEMPLATE.format(
-            slug=slug,
-            name=name,
-            price=price,
-            main_image=main_image,
-            thumbnails=thumbnails,
-            features_html=features_html,
-            color_swatches=color_swatches,
-            default_color=default_color,
-            stock=product['stock'],
-            stock_text=stock_text,
-            recommendations=recommendations_html,
-            recommendations_json=json.dumps(recommendations)
-        )
-        
-        # Write the file
-        output_file = f"{slug}.html"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(page_html)
-        print(f"✅ Generated {output_file}")
-    
-    print("🎉 Product generation complete!")
-
-if __name__ == "__main__":
-    main()
+            window.location.href =
