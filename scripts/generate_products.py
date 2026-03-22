@@ -1,734 +1,432 @@
 #!/usr/bin/env python3
+"""
+Product Page Generator for Daje Games
+Generates standalone product detail pages with basket/quotation system
+Generates products.json for main page dynamic loading
+CSV Source: products.csv
+"""
+
 import csv
 import json
-import os
+import re
+from pathlib import Path
 
-# Paths
-PRODUCTS_DIR = "."
-CSV_FILE = "products.csv"
-JSON_FILE = "products.json"
+def slugify(name):
+    """Convert product name to URL-friendly slug"""
+    return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
 
-# ===== PRODUCT PAGE TEMPLATE =====
-PRODUCT_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
+def parse_csv_list(value):
+    """Parse comma-separated values from CSV"""
+    if not value or value == '':
+        return []
+    return [item.strip() for item in str(value).split(',')]
+
+def parse_color_swatches(colors_str, hex_str):
+    """Parse colors and hex codes into array of objects"""
+    colors = parse_csv_list(colors_str)
+    hexes = parse_csv_list(hex_str)
+    
+    if len(hexes) == len(colors) and hexes:
+        return [{'name': colors[i], 'hex': hexes[i]} for i in range(len(colors))]
+    else:
+        default_colors = {
+            'Pink': '#FFB6C1',
+            'Black': '#000000',
+            'White': '#FFFFFF',
+            'Red': '#FF4444',
+            'Blue': '#4444FF',
+            'Purple': '#AA66FF',
+            'Silver': '#C0C0C0',
+            'Yellow': '#FFEB3B'
+        }
+        return [{'name': c, 'hex': default_colors.get(c, '#CCCCCC')} for c in colors]
+
+def generate_thumbnails(gallery_images, main_image):
+    """Generate thumbnail gallery HTML"""
+    thumbs = []
+    all_images = [main_image] + gallery_images if gallery_images else [main_image]
+    seen = set()
+    unique_images = []
+    for img in all_images:
+        if img and img not in seen:
+            seen.add(img)
+            unique_images.append(img)
+    
+    for img in unique_images:
+        active_class = 'active' if img == main_image else ''
+        thumbs.append(f'<img src="{img}" class="thumbnail {active_class}" onclick="changeImage(this.src)">')
+    
+    return '\n'.join(thumbs)
+
+def generate_features(features):
+    """Generate features list HTML"""
+    if not features:
+        return '<li><i class="fas fa-check-circle"></i> Premium quality</li>'
+    
+    items = []
+    for f in features:
+        items.append(f'<li><i class="fas fa-check-circle"></i> {f}</li>')
+    return '\n'.join(items)
+
+def generate_color_options(colors_data):
+    """Generate color options HTML"""
+    if not colors_data or len(colors_data) == 0:
+        return ''
+    
+    swatches = []
+    for i, color in enumerate(colors_data):
+        selected_class = 'selected' if i == 0 else ''
+        swatches.append(f'<div class="color-swatch {selected_class}" style="background: {color["hex"]}" data-color="{color["name"]}" onclick="selectColor(this, \'{color["name"]}\')"></div>')
+    
+    return f'''
+    <div class="color-options">
+        <h3>Color Options</h3>
+        <div class="color-swatches">
+            {''.join(swatches)}
+        </div>
+    </div>
+    '''
+
+def generate_size_options(sizes):
+    """Generate size options HTML"""
+    if not sizes or len(sizes) == 0:
+        return ''
+    
+    buttons = []
+    for i, size in enumerate(sizes):
+        selected_class = 'selected' if i == 0 else ''
+        buttons.append(f'<div class="size-btn {selected_class}" data-size="{size}" onclick="selectSize(this, \'{size}\')">{size}</div>')
+    
+    return f'''
+    <div class="size-options">
+        <h3>Available Options</h3>
+        <div class="size-buttons">
+            {''.join(buttons)}
+        </div>
+    </div>
+    '''
+
+def generate_product_page(product, lang='en'):
+    """Generate complete product detail HTML with basket system"""
+    
+    # Language-specific content
+    if lang == 'th':
+        name = product.get('name_th', product['name'])
+        description = product.get('full_description_th', product['full_description'])
+        lang_prefix = '/th'
+        stock_labels = {
+            'In Stock': 'มีสินค้า',
+            'Low Stock': 'สินค้าใกล้หมด',
+            'Out of Stock': 'สินค้าหมด',
+            'Pre-order': 'สั่งจองล่วงหน้า'
+        }
+        stock_status_text = stock_labels.get(product['stock_status'], product['stock_status'])
+    else:
+        name = product['name']
+        description = product['full_description']
+        lang_prefix = ''
+        stock_status_text = product['stock_status']
+    
+    # Parse data
+    gallery_images = parse_csv_list(product.get('gallery_images', ''))
+    colors_data = parse_color_swatches(
+        product.get('colors', ''),
+        product.get('color_hex', '')
+    )
+    sizes = parse_csv_list(product.get('options', ''))
+    features = parse_csv_list(product.get('feature_details', ''))
+    
+    # Handle feature_details with line breaks - preserve as is
+    feature_details_raw = product.get('feature_details', '')
+    
+    # Get first color and size as default
+    default_color = colors_data[0]['name'] if colors_data else 'Default'
+    default_size = sizes[0] if sizes else 'Standard'
+    
+    # Stock status class
+    stock_class = {
+        'In Stock': 'in-stock',
+        'Low Stock': 'low-stock',
+        'Out of Stock': 'out-stock',
+        'Pre-order': 'pre-order'
+    }.get(product['stock_status'], 'in-stock')
+    
+    # Read all products for recommendations
+    all_products = []
+    csv_path = Path(__file__).parent.parent / 'products.csv'
+    if csv_path.exists():
+        with open(csv_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if 'id' in row and row['id']:
+                    all_products.append(row)
+    
+    # Filter out current product for recommendations
+    product_id = product.get('id', '')
+    recommendations = [p for p in all_products if p.get('id', '') != product_id][:4]
+    
+    # Build recommendations HTML
+    rec_html = ''
+    for rec in recommendations:
+        rec_name = rec['name'] if lang == 'en' else rec.get('name_th', rec['name'])
+        rec_slug = slugify(rec['name'])
+        rec_price = int(float(rec['price'])) if rec.get('price') else 0
+        rec_html += f'''
+        <div class="recommend-card" onclick="location.href='{lang_prefix}/{rec_slug}.html'">
+            <img src="{rec.get('main_image', '')}" class="recommend-card-image">
+            <div class="recommend-card-info">
+                <div class="recommend-card-name">{rec_name}</div>
+                <div class="recommend-card-price">{rec_price:,}</div>
+            </div>
+        </div>
+        '''
+    
+    price_value = int(float(product['price'])) if product.get('price') else 0
+    
+    # Build HTML - Using the same template as Flow but with Daje colors
+    html = f'''<!DOCTYPE html>
+<html lang="{lang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>{name} | Daje Games</title>
     
-    <!-- Font Awesome -->
+    <meta name="description" content="{description[:150]}">
+    <meta property="og:title" content="{name}">
+    <meta property="og:description" content="{description[:150]}">
+    <meta property="og:image" content="{product['main_image']}">
+    <meta property="og:url" content="https://daje.janishammer.com{lang_prefix}/{slugify(product['name'])}.html">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts - Quicksand for Daje -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- INJECTORS -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://assets.janishammer.com/js/injector-core.js"></script>
     <script src="https://assets.janishammer.com/js/injector-config.js"></script>
     
     <style>
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }}
-        
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
             font-family: 'Quicksand', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             min-height: 100vh;
             padding: 1rem;
         }}
-        
-        /* Override dark overlay for Daje */
-        body::before {{
-            background: rgba(0, 0, 0, 0.05) !important;
-        }}
-        
+        body::before {{ display: none !important; }}
         .cart-floating {{
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
+            position: fixed; bottom: 2rem; right: 2rem;
             background: linear-gradient(135deg, #FFB6C1, #FF99AA);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 1000; border: 2px solid rgba(255,255,255,0.3);
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
-            z-index: 1000;
-            border: 2px solid rgba(255,255,255,0.3);
         }}
-        
-        .cart-floating:hover {{
-            transform: scale(1.1);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
-        }}
-        
-        .cart-floating i {{
-            font-size: 1.5rem;
-            color: #000;
-        }}
-        
+        .cart-floating:hover {{ transform: scale(1.1); }}
+        .cart-floating i {{ font-size: 1.5rem; color: #1a1a1a; }}
         .cart-count {{
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #D4AF37;
-            color: #000;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: bold;
+            position: absolute; top: -5px; right: -5px;
+            background: #D4AF37; color: #1a1a1a; border-radius: 50%;
+            width: 24px; height: 24px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: bold;
         }}
-        
         .product-container {{
-            max-width: 1280px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.98);
-            border-radius: 32px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            max-width: 1280px; margin: 0 auto;
+            background: rgba(30,30,35,0.95); border-radius: 32px;
+            overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         }}
-        
         .product-detail {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            padding: 2rem;
-            background: white;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+            padding: 2rem; background: #1f1f24;
         }}
-        
-        .product-gallery {{
-            position: relative;
-        }}
-        
+        .product-gallery {{ position: relative; }}
         .main-image-container {{
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            border-radius: 24px;
-            background: #f8f9fa;
-            aspect-ratio: 1 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative; cursor: pointer; overflow: hidden;
+            border-radius: 24px; background: #2a2a2a;
+            aspect-ratio: 1 / 1; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }}
-        
-        .main-image {{
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.4s ease;
-        }}
-        
-        .main-image-container:hover .main-image {{
-            transform: scale(1.05);
-        }}
-        
+        .main-image {{ width: 100%; height: 100%; object-fit: contain; transition: transform 0.4s ease; }}
+        .main-image-container:hover .main-image {{ transform: scale(1.05); }}
         .zoom-icon {{
-            position: absolute;
-            bottom: 1rem;
-            right: 1rem;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
+            position: absolute; bottom: 1rem; right: 1rem;
+            background: rgba(0,0,0,0.7); color: white;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; backdrop-filter: blur(5px);
         }}
-        
-        .zoom-icon:hover {{
-            background: #D4AF37;
-            color: #000;
-            transform: scale(1.1);
-        }}
-        
+        .zoom-icon:hover {{ background: #D4AF37; color: #000; }}
         .thumbnail-gallery {{
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
+            display: flex; gap: 0.75rem; margin-top: 1rem;
+            overflow-x: auto; padding-bottom: 0.5rem;
         }}
-        
         .thumbnail {{
-            width: 70px;
-            height: 70px;
-            border-radius: 16px;
-            cursor: pointer;
+            width: 70px; height: 70px; border-radius: 16px; cursor: pointer;
+            border: 3px solid transparent; object-fit: cover; flex-shrink: 0;
             transition: all 0.3s ease;
-            border: 3px solid transparent;
-            object-fit: cover;
-            flex-shrink: 0;
         }}
-        
-        .thumbnail:hover {{
-            transform: translateY(-4px);
-            border-color: #D4AF37;
-        }}
-        
-        .thumbnail.active {{
-            border-color: #D4AF37;
-            box-shadow: 0 4px 12px rgba(212,175,55,0.3);
-        }}
-        
-        .product-info {{
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }}
-        
+        .thumbnail:hover {{ transform: translateY(-4px); border-color: #D4AF37; }}
+        .thumbnail.active {{ border-color: #D4AF37; }}
+        .product-info {{ display: flex; flex-direction: column; gap: 1rem; }}
         .product-category {{
-            display: inline-block;
-            background: rgba(255,182,193,0.2);
-            color: #FFB6C1;
-            padding: 0.4rem 1rem;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            width: fit-content;
+            display: inline-block; background: rgba(255,182,193,0.2);
+            color: #FFB6C1; padding: 0.4rem 1rem; border-radius: 40px;
+            font-size: 0.85rem; font-weight: 600; width: fit-content;
         }}
-        
-        .product-name {{
-            font-size: 2rem;
-            font-weight: 800;
-            color: #000;
-            line-height: 1.2;
-        }}
-        
-        .product-brand {{
-            font-size: 0.9rem;
-            color: #666;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }}
-        
-        .product-brand i {{
-            color: #FFB6C1;
-        }}
-        
-        .product-price {{
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #D4AF37;
-            margin: 0.25rem 0;
-        }}
-        
-        .product-price::before {{
-            content: "฿";
-            font-size: 1.6rem;
-        }}
-        
+        .product-name {{ font-size: 2rem; font-weight: 800; color: #FFB6C1; line-height: 1.2; }}
+        .product-brand {{ font-size: 0.9rem; color: #aaa; display: flex; align-items: center; gap: 0.5rem; }}
+        .product-brand i {{ color: #FFB6C1; }}
+        .product-price {{ font-size: 2.2rem; font-weight: 800; color: #D4AF37; margin: 0.25rem 0; }}
+        .product-price::before {{ content: "฿"; font-size: 1.6rem; }}
         .stock-status {{
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            width: fit-content;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; border-radius: 40px;
+            font-weight: 600; font-size: 0.85rem; width: fit-content;
         }}
-        
-        .stock-status.in-stock {{
-            background: rgba(212,175,55,0.1);
-            color: #D4AF37;
-            border: 1px solid rgba(212,175,55,0.3);
-        }}
-        
-        .stock-status.pre-order {{
-            background: rgba(255,152,0,0.1);
-            color: #FF9800;
-            border: 1px solid rgba(255,152,0,0.3);
-        }}
-        
-        .stock-status.out-stock {{
-            background: rgba(244,67,54,0.1);
-            color: #F44336;
-            border: 1px solid rgba(244,67,54,0.3);
-        }}
-        
-        .features-section h3 {{
-            font-size: 1rem;
-            color: #000;
-            margin-bottom: 0.75rem;
-            font-weight: 700;
-        }}
-        
-        .features-list {{
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }}
-        
-        .features-list li {{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: #555;
-            font-size: 0.85rem;
-        }}
-        
-        .features-list li i {{
-            color: #D4AF37;
-            font-size: 0.9rem;
-            width: 20px;
-        }}
-        
-        .color-options {{
-            margin: 0.5rem 0;
-        }}
-        
-        .color-options h3 {{
-            font-size: 0.9rem;
-            color: #000;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }}
-        
-        .color-swatches {{
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }}
-        
+        .stock-status.in-stock {{ background: rgba(212,175,55,0.2); color: #D4AF37; border: 1px solid rgba(212,175,55,0.3); }}
+        .stock-status.low-stock {{ background: rgba(255,152,0,0.2); color: #FF9800; border: 1px solid rgba(255,152,0,0.3); }}
+        .stock-status.out-stock {{ background: rgba(244,67,54,0.2); color: #F44336; border: 1px solid rgba(244,67,54,0.3); }}
+        .stock-status.pre-order {{ background: rgba(33,150,243,0.2); color: #2196F3; border: 1px solid rgba(33,150,243,0.3); }}
+        .features-section h3 {{ font-size: 1rem; color: #FFB6C1; margin-bottom: 0.75rem; font-weight: 700; }}
+        .features-list {{ list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }}
+        .features-list li {{ display: flex; align-items: center; gap: 0.75rem; color: #aaa; font-size: 0.85rem; }}
+        .features-list li i {{ color: #D4AF37; width: 20px; }}
+        .color-options, .size-options {{ margin: 0.5rem 0; }}
+        .color-options h3, .size-options h3 {{ font-size: 0.9rem; color: #FFB6C1; margin-bottom: 0.5rem; font-weight: 600; }}
+        .color-swatches {{ display: flex; gap: 0.5rem; flex-wrap: wrap; }}
         .color-swatch {{
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+            border: 3px solid transparent; transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }}
-        
-        .color-swatch:hover {{
-            transform: scale(1.1);
-        }}
-        
+        .color-swatch:hover {{ transform: scale(1.1); }}
         .color-swatch.selected {{
-            border-color: #D4AF37;
-            transform: scale(1.1);
-            box-shadow: 0 0 0 2px white, 0 0 0 4px #D4AF37;
+            border-color: #D4AF37; transform: scale(1.1);
+            box-shadow: 0 0 0 2px #1f1f24, 0 0 0 4px #D4AF37;
         }}
-        
-        .quantity-selector {{
-            margin: 0.5rem 0;
+        .size-buttons {{ display: flex; gap: 0.5rem; flex-wrap: wrap; }}
+        .size-btn {{
+            background: #2a2a2a; border: 2px solid #3a3a3a;
+            padding: 0.5rem 1rem; border-radius: 40px; cursor: pointer;
+            font-weight: 500; font-size: 0.85rem; color: #aaa;
+            transition: all 0.3s ease;
         }}
-        
-        .quantity-selector h3 {{
-            font-size: 0.9rem;
-            color: #000;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }}
-        
-        .quantity-control {{
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }}
-        
+        .size-btn:hover {{ background: #FFB6C1; border-color: #FFB6C1; color: #1a1a1a; }}
+        .size-btn.selected {{ background: #FFB6C1; border-color: #FFB6C1; color: #1a1a1a; font-weight: 700; }}
+        .quantity-selector {{ margin: 0.5rem 0; }}
+        .quantity-selector h3 {{ font-size: 0.9rem; color: #FFB6C1; margin-bottom: 0.5rem; font-weight: 600; }}
+        .quantity-control {{ display: flex; align-items: center; gap: 0.5rem; }}
         .qty-btn {{
-            width: 36px;
-            height: 36px;
-            border-radius: 12px;
-            background: #f0f0f0;
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: bold;
-            transition: all 0.2s;
+            width: 36px; height: 36px; border-radius: 12px;
+            background: #2a2a2a; border: 1px solid #3a3a3a;
+            cursor: pointer; font-size: 1.2rem; font-weight: bold; color: #fff;
         }}
-        
-        .qty-btn:hover {{
-            background: #D4AF37;
-            border-color: #D4AF37;
-        }}
-        
-        .quantity-input {{
-            width: 60px;
-            height: 36px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-        }}
-        
-        .action-buttons {{
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-        }}
-        
+        .qty-btn:hover {{ background: #D4AF37; }}
+        .quantity-input {{ width: 60px; height: 36px; text-align: center; border: 1px solid #3a3a3a; border-radius: 12px; background: #2a2a2a; color: #fff; }}
+        .action-buttons {{ display: flex; gap: 0.75rem; margin-top: 0.5rem; }}
         .btn-add-to-cart {{
-            flex: 2;
-            background: linear-gradient(135deg, #FFB6C1, #FF99AA);
-            color: #000;
-            border: none;
-            padding: 0.8rem;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            flex: 2; background: linear-gradient(135deg, #FFB6C1, #FF99AA);
+            color: #1a1a1a; border: none; padding: 0.8rem;
+            border-radius: 60px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }}
-        
-        .btn-add-to-cart:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255,182,193,0.3);
-        }}
-        
+        .btn-add-to-cart:hover {{ transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,182,193,0.3); }}
         .btn-wishlist {{
-            background: rgba(0,0,0,0.05);
-            border: 2px solid #e0e0e0;
-            padding: 0.8rem;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #666;
-            aspect-ratio: 1;
+            background: rgba(255,255,255,0.1); border: 2px solid #3a3a3a;
+            padding: 0.8rem; border-radius: 60px; cursor: pointer;
+            color: #aaa; aspect-ratio: 1;
         }}
-        
-        .btn-wishlist:hover {{
-            background: rgba(255,182,193,0.1);
-            border-color: #FFB6C1;
-            color: #FFB6C1;
-        }}
-        
-        .you-may-like {{
-            background: #f8f9fa;
-            padding: 2rem;
-            border-top: 1px solid #e0e0e0;
-        }}
-        
-        .you-may-like h2 {{
-            font-size: 1.5rem;
-            color: #000;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }}
-        
+        .btn-wishlist:hover {{ background: rgba(255,182,193,0.2); border-color: #FFB6C1; color: #FFB6C1; }}
+        .you-may-like {{ background: #1a1a1a; padding: 2rem; border-top: 1px solid #2a2a2a; }}
+        .you-may-like h2 {{ font-size: 1.5rem; color: #FFB6C1; margin-bottom: 1.5rem; font-weight: 700; }}
         .slider-track {{
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding-bottom: 1rem;
+            display: flex; gap: 1rem; overflow-x: auto;
+            scroll-behavior: smooth; padding-bottom: 1rem;
         }}
-        
-        .slider-track::-webkit-scrollbar {{
-            height: 6px;
-        }}
-        
-        .slider-track::-webkit-scrollbar-track {{
-            background: #e0e0e0;
-            border-radius: 10px;
-        }}
-        
-        .slider-track::-webkit-scrollbar-thumb {{
-            background: #D4AF37;
-            border-radius: 10px;
-        }}
-        
+        .slider-track::-webkit-scrollbar {{ height: 6px; }}
+        .slider-track::-webkit-scrollbar-track {{ background: #2a2a2a; border-radius: 10px; }}
+        .slider-track::-webkit-scrollbar-thumb {{ background: #D4AF37; border-radius: 10px; }}
         .recommend-card {{
-            flex: 0 0 calc(25% - 0.75rem);
-            min-width: 200px;
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            flex: 0 0 calc(25% - 0.75rem); min-width: 200px;
+            background: #2a2a2a; border-radius: 20px; overflow: hidden;
+            cursor: pointer; transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }}
-        
-        .recommend-card:hover {{
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-        }}
-        
-        .recommend-card-image {{
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-        }}
-        
-        .recommend-card-info {{
-            padding: 0.75rem;
-        }}
-        
-        .recommend-card-name {{
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #000;
-            margin-bottom: 0.25rem;
-        }}
-        
-        .recommend-card-price {{
-            font-size: 1rem;
-            font-weight: 800;
-            color: #D4AF37;
-        }}
-        
-        .recommend-card-price::before {{
-            content: "฿";
-            font-size: 0.8rem;
-        }}
-        
-        .slider-nav {{
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }}
-        
+        .recommend-card:hover {{ transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }}
+        .recommend-card-image {{ width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }}
+        .recommend-card-info {{ padding: 0.75rem; }}
+        .recommend-card-name {{ font-size: 0.9rem; font-weight: 700; color: #FFB6C1; margin-bottom: 0.25rem; }}
+        .recommend-card-price {{ font-size: 1rem; font-weight: 800; color: #D4AF37; }}
+        .recommend-card-price::before {{ content: "฿"; font-size: 0.8rem; }}
+        .slider-nav {{ display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem; }}
         .nav-btn {{
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: white;
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            transition: all 0.3s;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #2a2a2a; border: 1px solid #3a3a3a; cursor: pointer; color: #fff;
         }}
-        
-        .nav-btn:hover {{
-            background: #D4AF37;
-            border-color: #D4AF37;
-        }}
-        
+        .nav-btn:hover {{ background: #D4AF37; border-color: #D4AF37; }}
         .cart-modal {{
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10001;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            z-index: 10001; justify-content: center; align-items: center;
         }}
-        
-        .cart-modal.active {{
-            display: flex;
-        }}
-        
+        .cart-modal.active {{ display: flex; }}
         .cart-content {{
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            background: white;
-            border-radius: 32px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            max-width: 600px; width: 90%; max-height: 80vh;
+            background: #2a2a2a; border-radius: 32px; overflow: hidden;
+            display: flex; flex-direction: column;
+            border: 1px solid rgba(255,182,193,0.3);
         }}
-        
         .cart-header {{
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #FFB6C1, #FF99AA);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1.5rem; background: linear-gradient(135deg, #FFB6C1, #FF99AA);
+            display: flex; justify-content: space-between; align-items: center;
         }}
-        
-        .cart-header h2 {{
-            color: #000;
-            font-size: 1.3rem;
-        }}
-        
-        .cart-close {{
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #000;
-        }}
-        
-        .cart-items {{
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-        }}
-        
-        .cart-item {{
-            display: flex;
-            gap: 1rem;
-            padding: 1rem;
-            border-bottom: 1px solid #e0e0e0;
-        }}
-        
-        .cart-item-image {{
-            width: 70px;
-            height: 70px;
-            object-fit: cover;
-            border-radius: 12px;
-        }}
-        
-        .cart-item-details {{
-            flex: 1;
-        }}
-        
-        .cart-item-name {{
-            font-weight: 700;
-            color: #000;
-            margin-bottom: 0.25rem;
-        }}
-        
-        .cart-item-variant {{
-            font-size: 0.75rem;
-            color: #888;
-        }}
-        
-        .cart-item-price {{
-            color: #D4AF37;
-            font-weight: 700;
-        }}
-        
-        .cart-item-actions {{
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }}
-        
-        .cart-qty-btn {{
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: #f0f0f0;
-            border: none;
-            cursor: pointer;
-        }}
-        
-        .cart-item-qty {{
-            width: 40px;
-            text-align: center;
-        }}
-        
-        .cart-item-remove {{
-            color: #F44336;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }}
-        
-        .cart-summary {{
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-top: 2px solid #e0e0e0;
-        }}
-        
-        .cart-total {{
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.2rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-        }}
-        
+        .cart-header h2 {{ color: #1a1a1a; font-size: 1.3rem; }}
+        .cart-close {{ font-size: 1.5rem; cursor: pointer; color: #1a1a1a; }}
+        .cart-items {{ flex: 1; overflow-y: auto; padding: 1rem; }}
+        .cart-item {{ display: flex; gap: 1rem; padding: 1rem; border-bottom: 1px solid #3a3a3a; }}
+        .cart-item-image {{ width: 70px; height: 70px; object-fit: cover; border-radius: 12px; }}
+        .cart-item-details {{ flex: 1; }}
+        .cart-item-name {{ font-weight: 700; color: #FFB6C1; margin-bottom: 0.25rem; }}
+        .cart-item-variant {{ font-size: 0.75rem; color: #aaa; }}
+        .cart-item-price {{ color: #D4AF37; font-weight: 700; }}
+        .cart-item-actions {{ display: flex; align-items: center; gap: 0.5rem; }}
+        .cart-qty-btn {{ width: 28px; height: 28px; border-radius: 8px; background: #3a3a3a; border: none; cursor: pointer; color: #fff; }}
+        .cart-item-qty {{ width: 40px; text-align: center; color: #fff; }}
+        .cart-item-remove {{ color: #F44336; cursor: pointer; font-size: 1.2rem; }}
+        .cart-summary {{ padding: 1.5rem; background: #1f1f24; border-top: 2px solid #3a3a3a; }}
+        .cart-total {{ display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; color: #fff; }}
         .btn-quotation {{
-            width: 100%;
-            background: linear-gradient(135deg, #FFB6C1, #FF99AA);
-            color: #000;
-            border: none;
-            padding: 1rem;
-            border-radius: 60px;
-            font-weight: 800;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
+            width: 100%; background: linear-gradient(135deg, #FFB6C1, #FF99AA);
+            color: #1a1a1a; border: none; padding: 1rem;
+            border-radius: 60px; font-weight: 800; cursor: pointer;
         }}
-        
-        .btn-quotation:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255,182,193,0.3);
-        }}
-        
         .toast {{
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
+            position: fixed; bottom: 2rem; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: #D4AF37;
-            color: #000;
-            padding: 0.8rem 1.5rem;
-            border-radius: 60px;
-            font-weight: 600;
-            z-index: 10002;
-            transition: transform 0.3s;
-            white-space: nowrap;
+            background: #D4AF37; color: #1a1a1a; padding: 0.8rem 1.5rem;
+            border-radius: 60px; font-weight: 600; z-index: 10002;
+            transition: transform 0.3s; white-space: nowrap;
         }}
-        
-        .toast.show {{
-            transform: translateX(-50%) translateY(0);
-        }}
-        
+        .toast.show {{ transform: translateX(-50%) translateY(0); }}
         .lightbox {{
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 10000; justify-content: center; align-items: center;
         }}
-        
-        .lightbox.active {{
-            display: flex;
-        }}
-        
-        .lightbox-img {{
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        }}
-        
+        .lightbox.active {{ display: flex; }}
+        .lightbox-img {{ max-width: 90%; max-height: 90%; object-fit: contain; }}
         .lightbox-close {{
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            color: white;
-            font-size: 40px;
-            cursor: pointer;
+            position: absolute; top: 20px; right: 30px;
+            color: white; font-size: 40px; cursor: pointer;
         }}
-        
         @media (max-width: 768px) {{
             body {{ padding: 0.5rem; }}
             .product-detail {{ grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }}
             .product-name {{ font-size: 1.5rem; }}
-            .product-price {{ font-size: 1.8rem; }}
-            .you-may-like {{ padding: 1rem; }}
             .recommend-card {{ flex: 0 0 calc(50% - 0.5rem); }}
-            .action-buttons {{ flex-direction: column; }}
-            .btn-wishlist {{ aspect-ratio: auto; padding: 0.8rem; }}
             .cart-floating {{ bottom: 1rem; right: 1rem; width: 50px; height: 50px; }}
         }}
-        
-        @media (max-width: 480px) {{
-            .recommend-card {{ flex: 0 0 100%; }}
-        }}
+        @media (max-width: 480px) {{ .recommend-card {{ flex: 0 0 100%; }} }}
     </style>
 </head>
 <body>
@@ -741,46 +439,28 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         <div class="product-detail">
             <div class="product-gallery">
                 <div class="main-image-container" id="mainImageContainer">
-                    <img src="{main_image}" alt="{name}" class="main-image" id="mainImage">
-                    <div class="zoom-icon" id="zoomIcon">
-                        <i class="fas fa-expand"></i>
-                    </div>
+                    <img src="{product['main_image']}" alt="{name}" class="main-image" id="mainImage">
+                    <div class="zoom-icon" id="zoomIcon"><i class="fas fa-expand"></i></div>
                 </div>
                 <div class="thumbnail-gallery" id="thumbnailGallery">
-                    {thumbnails}
+                    {generate_thumbnails(gallery_images, product['main_image'])}
                 </div>
             </div>
             
             <div class="product-info">
-                <div>
-                    <span class="product-category">Claw Machine</span>
-                </div>
+                <div><span class="product-category">{product['category']}</span></div>
                 <h1 class="product-name">{name}</h1>
-                <div class="product-brand">
-                    <i class="fas fa-tag"></i>
-                    <span>Daje Games · Premium Edition</span>
-                </div>
-                <div class="product-price">{price:,}</div>
-                <div class="stock-status {stock}" id="stockStatus">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{stock_text}</span>
-                </div>
+                <div class="product-brand"><i class="fas fa-tag"></i><span>{product.get('brand', 'Daje Games')} · {product.get('collection', 'Premium')}</span></div>
+                <div class="product-price">{price_value:,}</div>
+                <div class="stock-status {stock_class}"><i class="fas fa-{'check-circle' if product['stock_status'] == 'In Stock' else 'clock' if product['stock_status'] == 'Pre-order' else 'exclamation-circle'}"></i><span>{stock_status_text}</span></div>
                 
                 <div class="features-section">
-                    <h3>Key Features</h3>
-                    <ul class="features-list">
-                        {features_html}
-                    </ul>
+                    <h3>Specifications</h3>
+                    <div class="features-list" style="white-space: pre-line;">{feature_details_raw}</div>
                 </div>
                 
-                <div class="color-options">
-                    <h3>Color Options</h3>
-                    <div class="color-swatches">
-                        {color_swatches}
-                    </div>
-                </div>
-                
-                {options_html}
+                {generate_color_options(colors_data)}
+                {generate_size_options(sizes)}
                 
                 <div class="quantity-selector">
                     <h3>Quantity</h3>
@@ -792,13 +472,8 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn-add-to-cart" onclick="addToCart()">
-                        <i class="fas fa-shopping-cart"></i>
-                        Add to Cart
-                    </button>
-                    <button class="btn-wishlist" onclick="toggleWishlist(this)">
-                        <i class="far fa-heart"></i>
-                    </button>
+                    <button class="btn-add-to-cart" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                    <button class="btn-wishlist" onclick="toggleWishlist(this)"><i class="far fa-heart"></i></button>
                 </div>
             </div>
         </div>
@@ -806,7 +481,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         <div class="you-may-like">
             <h2>✨ You May Also Like</h2>
             <div class="slider-track" id="sliderTrack">
-                {recommendations}
+                {rec_html}
             </div>
             <div class="slider-nav">
                 <button class="nav-btn" onclick="scrollSlider(-1)"><i class="fas fa-chevron-left"></i></button>
@@ -815,69 +490,50 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
         </div>
     </div>
     
-    <!-- CART MODAL -->
     <div id="cartModal" class="cart-modal">
         <div class="cart-content">
-            <div class="cart-header">
-                <h2><i class="fas fa-shopping-bag"></i> Your Cart</h2>
-                <span class="cart-close" onclick="closeCart()">&times;</span>
-            </div>
-            <div class="cart-items" id="cartItems">
-                <div style="text-align: center; padding: 2rem; color: #888;">Your cart is empty</div>
-            </div>
+            <div class="cart-header"><h2><i class="fas fa-shopping-bag"></i> Your Cart</h2><span class="cart-close" onclick="closeCart()">&times;</span></div>
+            <div class="cart-items" id="cartItems"><div style="text-align:center;padding:2rem;color:#aaa;">Your cart is empty</div></div>
             <div class="cart-summary">
-                <div class="cart-total">
-                    <span>Total</span>
-                    <span id="cartTotal">฿0</span>
-                </div>
-                <button class="btn-quotation" onclick="requestQuotation()">
-                    <i class="fas fa-file-invoice"></i> Get Your Quotation
-                </button>
+                <div class="cart-total"><span>Total</span><span id="cartTotal">฿0</span></div>
+                <button class="btn-quotation" onclick="requestQuotation()"><i class="fas fa-file-invoice"></i> Get Your Quotation</button>
             </div>
         </div>
     </div>
     
-    <!-- QUOTATION MODAL -->
     <div id="quotationModal" class="cart-modal">
-        <div class="cart-content" style="max-width: 500px;">
-            <div class="cart-header">
-                <h2><i class="fas fa-check-circle"></i> Quotation Request</h2>
-                <span class="cart-close" onclick="closeQuotationModal()">&times;</span>
-            </div>
-            <div style="padding: 2rem; text-align: center;">
-                <i class="fas fa-envelope" style="font-size: 3rem; color: #D4AF37; margin-bottom: 1rem;"></i>
-                <h3 style="color: #000; margin-bottom: 0.5rem;">Thank You!</h3>
-                <p style="color: #666; margin-bottom: 1rem;">We've received your quotation request.</p>
-                <p style="color: #888; font-size: 0.9rem;">Our team will contact you within 24 hours with your quotation details.</p>
-                <button class="btn-quotation" style="margin-top: 1.5rem;" onclick="closeQuotationModal()">
-                    Continue Shopping
-                </button>
+        <div class="cart-content" style="max-width:500px;">
+            <div class="cart-header"><h2><i class="fas fa-check-circle"></i> Quotation Request</h2><span class="cart-close" onclick="closeQuotationModal()">&times;</span></div>
+            <div style="padding:2rem;text-align:center;">
+                <i class="fas fa-envelope" style="font-size:3rem;color:#D4AF37;margin-bottom:1rem;"></i>
+                <h3 style="color:#FFB6C1;margin-bottom:0.5rem;">Thank You!</h3>
+                <p style="color:#aaa;margin-bottom:1rem;">We've received your quotation request.</p>
+                <p style="color:#888;font-size:0.9rem;">Our team will contact you within 24 hours with your quotation details.</p>
+                <button class="btn-quotation" style="margin-top:1.5rem;" onclick="closeQuotationModal()">Continue Shopping</button>
             </div>
         </div>
     </div>
     
-    <!-- LIGHTBOX -->
-    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
-        <img class="lightbox-img" id="lightboxImg">
-    </div>
-    
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()"><span class="lightbox-close">&times;</span><img class="lightbox-img" id="lightboxImg"></div>
     <div id="toast" class="toast"></div>
     
     <script>
-        let cart = JSON.parse(localStorage.getItem('dajeCart')) || [];
-        let currentColor = '{default_color}';
-        let currentQuantity = 1;
-        let currentOption = '';
-        
         const currentProduct = {{
-            id: '{slug}',
+            id: '{product.get('id', '')}',
             name: "{name}",
-            price: {price},
-            image: "{main_image}"
+            brand: "{product.get('brand', 'Daje Games')}",
+            price: {price_value},
+            image: "{product['main_image']}",
+            colors: {json.dumps([c['name'] for c in colors_data])},
+            sizes: {json.dumps(sizes)},
+            defaultColor: "{default_color}",
+            defaultSize: "{default_size}"
         }};
         
-        const recommendations = {recommendations_json};
+        let currentColor = currentProduct.defaultColor;
+        let currentSize = currentProduct.defaultSize;
+        let currentQuantity = 1;
+        let cart = JSON.parse(localStorage.getItem('dajeCart')) || [];
         
         function updateCartUI() {{
             const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -886,43 +542,14 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             renderCartItems();
         }}
         
-        function addToCart() {{
-            const variant = currentOption ? currentColor + ' · ' + currentOption : currentColor;
-            const existingItem = cart.find(item => 
-                item.id === currentProduct.id && 
-                item.color === currentColor &&
-                item.option === currentOption
-            );
-            
-            if (existingItem) {{
-                existingItem.quantity += currentQuantity;
-            }} else {{
-                cart.push({{
-                    id: currentProduct.id,
-                    name: currentProduct.name,
-                    price: currentProduct.price,
-                    image: currentProduct.image,
-                    color: currentColor,
-                    option: currentOption,
-                    variant: variant,
-                    quantity: currentQuantity
-                }});
-            }}
-            
-            updateCartUI();
-            showToast(`Added ${{currentQuantity}} x ${{currentProduct.name}} to cart`);
-        }}
-        
         function renderCartItems() {{
             const container = document.getElementById('cartItems');
             const cartTotal = document.getElementById('cartTotal');
-            
             if (cart.length === 0) {{
-                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #888;">Your cart is empty</div>';
-                if (cartTotal) cartTotal.innerText = '฿0';
+                container.innerHTML = '<div style="text-align:center;padding:2rem;color:#aaa;">Your cart is empty</div>';
+                cartTotal.innerText = '฿0';
                 return;
             }}
-            
             let total = 0;
             container.innerHTML = cart.map((item, index) => {{
                 const itemTotal = item.price * item.quantity;
@@ -932,7 +559,7 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                         <img src="${{item.image}}" class="cart-item-image">
                         <div class="cart-item-details">
                             <div class="cart-item-name">${{item.name}}</div>
-                            <div class="cart-item-variant">${{item.variant}}</div>
+                            <div class="cart-item-variant">${{item.color || 'Default'}} · ${{item.size || 'Standard'}}</div>
                             <div class="cart-item-price">฿${{item.price.toLocaleString()}}</div>
                         </div>
                         <div class="cart-item-actions">
@@ -944,329 +571,135 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
                     </div>
                 `;
             }}).join('');
-            
-            if (cartTotal) cartTotal.innerText = `฿${{total.toLocaleString()}}`;
+            cartTotal.innerText = `฿${{total.toLocaleString()}}`;
         }}
         
         function updateCartItem(index, change) {{
             const newQty = cart[index].quantity + change;
-            if (newQty <= 0) {{
-                cart.splice(index, 1);
-            }} else {{
-                cart[index].quantity = newQty;
-            }}
+            if (newQty <= 0) cart.splice(index, 1);
+            else cart[index].quantity = newQty;
             updateCartUI();
         }}
         
-        function removeCartItem(index) {{
-            cart.splice(index, 1);
+        function removeCartItem(index) {{ cart.splice(index, 1); updateCartUI(); }}
+        
+        function addToCart() {{
+            const existingItem = cart.find(item => item.id === currentProduct.id && item.color === currentColor && item.size === currentSize);
+            if (existingItem) existingItem.quantity += currentQuantity;
+            else cart.push({{
+                id: currentProduct.id, name: currentProduct.name, price: currentProduct.price,
+                image: currentProduct.image, color: currentColor, size: currentSize, quantity: currentQuantity
+            }});
             updateCartUI();
+            showToast(`Added ${{currentQuantity}} x ${{currentProduct.name}} to cart`);
         }}
         
         function requestQuotation() {{
-            if (cart.length === 0) {{
-                showToast('Please add items to your cart first');
-                return;
-            }}
-            
-            let itemsList = cart.map(item => 
-                `${{item.name}} (${{item.variant}}) x ${{item.quantity}} = ฿${{(item.price * item.quantity).toLocaleString()}}`
-            ).join('\\n');
-            
+            if (cart.length === 0) {{ showToast('Please add items to your cart first'); return; }}
+            let itemsList = cart.map(item => `${{item.name}} (${{item.color || 'Default'}}, ${{item.size || 'Standard'}}) x ${{item.quantity}} = ฿${{(item.price * item.quantity).toLocaleString()}}`).join('\\n');
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const subject = encodeURIComponent(`Quotation Request - Daje Games`);
-            const body = encodeURIComponent(
-                `Hello Daje Games Team,\\n\\n` +
-                `I would like to request a quotation for the following items:\\n\\n` +
-                `${{itemsList}}\\n\\n` +
-                `Total: ฿${{total.toLocaleString()}}\\n\\n` +
-                `Please contact me with the quotation details.\\n\\n` +
-                `Best regards,\\n[Your Name]\\n[Your Email]\\n[Your Phone]`
-            );
-            
-            closeCart();
-            window.location.href = `mailto:info@daje.janishammer.com?subject=${{subject}}&body=${{body}}`;
+            window.location.href = `mailto:info@daje.janishammer.com?subject=Quotation Request - Daje Games&body=Hello Daje Games Team,%0A%0AI would like to request a quotation for the following items:%0A%0A${{encodeURIComponent(itemsList)}}%0A%0ATotal: ฿${{total.toLocaleString()}}%0A%0APlease contact me with the quotation details.%0A%0ABest regards,%0A[Your Name]%0A[Your Email]%0A[Your Phone]`;
             showToast('Opening email client...');
         }}
         
-        function showToast(message) {{
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {{
-                toast.classList.remove('show');
-            }}, 2000);
-        }}
-        
-        function openCart() {{
-            document.getElementById('cartModal').classList.add('active');
-            renderCartItems();
-        }}
-        
-        function closeCart() {{
-            document.getElementById('cartModal').classList.remove('active');
-        }}
-        
-        function closeQuotationModal() {{
-            document.getElementById('quotationModal').classList.remove('active');
-        }}
-        
         function updateQuantity(change) {{
-            const input = document.getElementById('quantity');
             let newVal = currentQuantity + change;
-            if (newVal >= 1 && newVal <= 99) {{
-                currentQuantity = newVal;
-                input.value = currentQuantity;
-            }}
+            if (newVal >= 1 && newVal <= 99) {{ currentQuantity = newVal; document.getElementById('quantity').value = currentQuantity; }}
         }}
         
-        function selectColor(element, color) {{
-            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-            element.classList.add('selected');
-            currentColor = color;
-        }}
-        
-        function selectOption(element, option) {{
-            document.querySelectorAll('.size-btn').forEach(s => s.classList.remove('selected'));
-            element.classList.add('selected');
-            currentOption = option;
-        }}
-        
-        function toggleWishlist(btn) {{
-            const icon = btn.querySelector('i');
-            if (icon.classList.contains('far')) {{
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                showToast('Added to wishlist');
-            }} else {{
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                showToast('Removed from wishlist');
-            }}
-        }}
-        
-        function changeImage(src) {{
-            document.getElementById('mainImage').src = src;
-            document.querySelectorAll('.thumbnail').forEach(thumb => {{
-                thumb.classList.remove('active');
-                if (thumb.src === src) thumb.classList.add('active');
-            }});
-        }}
-        
-        function openLightbox() {{
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
-            lightboxImg.src = document.getElementById('mainImage').src;
-            lightbox.classList.add('active');
-        }}
-        
-        function closeLightbox() {{
-            document.getElementById('lightbox').classList.remove('active');
-        }}
-        
-        function scrollSlider(direction) {{
-            const track = document.getElementById('sliderTrack');
-            const scrollAmount = track.clientWidth * 0.8;
-            track.scrollBy({{ left: direction * scrollAmount, behavior: 'smooth' }});
-        }}
+        function selectColor(element, color) {{ document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected')); element.classList.add('selected'); currentColor = color; }}
+        function selectSize(element, size) {{ document.querySelectorAll('.size-btn').forEach(s => s.classList.remove('selected')); element.classList.add('selected'); currentSize = size; }}
+        function toggleWishlist(btn) {{ const icon = btn.querySelector('i'); icon.classList.toggle('far'); icon.classList.toggle('fas'); showToast(icon.classList.contains('fas') ? 'Added to wishlist' : 'Removed from wishlist'); }}
+        function changeImage(src) {{ document.getElementById('mainImage').src = src; document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active')); if (event.target && event.target.classList) event.target.classList.add('active'); }}
+        function openLightbox() {{ const lb = document.getElementById('lightbox'); document.getElementById('lightboxImg').src = document.getElementById('mainImage').src; lb.classList.add('active'); }}
+        function closeLightbox() {{ document.getElementById('lightbox').classList.remove('active'); }}
+        function openCart() {{ document.getElementById('cartModal').classList.add('active'); renderCartItems(); }}
+        function closeCart() {{ document.getElementById('cartModal').classList.remove('active'); }}
+        function closeQuotationModal() {{ document.getElementById('quotationModal').classList.remove('active'); }}
+        function showToast(msg) {{ const toast = document.getElementById('toast'); toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); }}
+        function scrollSlider(dir) {{ const track = document.getElementById('sliderTrack'); track.scrollBy({{ left: dir * track.clientWidth * 0.8, behavior: 'smooth' }}); }}
         
         document.getElementById('cartFloating').addEventListener('click', openCart);
         document.getElementById('mainImageContainer').addEventListener('click', openLightbox);
-        document.getElementById('zoomIcon').addEventListener('click', (e) => {{
-            e.stopPropagation();
-            openLightbox();
-        }});
-        
-        // Initialize recommendations
-        const track = document.getElementById('sliderTrack');
-        if (track && recommendations.length) {{
-            track.innerHTML = recommendations.map(rec => `
-                <div class="recommend-card" onclick="location.href='/${{rec.slug}}.html'">
-                    <img src="${{rec.image}}" class="recommend-card-image">
-                    <div class="recommend-card-info">
-                        <div class="recommend-card-name">${{rec.name}}</div>
-                        <div class="recommend-card-price">฿${{rec.price.toLocaleString()}}</div>
-                    </div>
-                </div>
-            `).join('');
-        }}
+        document.getElementById('zoomIcon').addEventListener('click', (e) => {{ e.stopPropagation(); openLightbox(); }});
         
         updateCartUI();
-        
-        window.changeImage = changeImage;
-        window.selectColor = selectColor;
-        window.selectOption = selectOption;
-        window.updateQuantity = updateQuantity;
-        window.addToCart = addToCart;
-        window.toggleWishlist = toggleWishlist;
-        window.openLightbox = openLightbox;
-        window.closeLightbox = closeLightbox;
-        window.openCart = openCart;
-        window.closeCart = closeCart;
-        window.closeQuotationModal = closeQuotationModal;
-        window.updateCartItem = updateCartItem;
-        window.removeCartItem = removeCartItem;
-        window.requestQuotation = requestQuotation;
-        window.scrollSlider = scrollSlider;
     </script>
 </body>
-</html>"""
+</html>'''
+    
+    return html
 
-def main():
-    print("🚀 Generating Daje product pages from CSV...")
-    
-    # Read products from CSV
-    products = []
-    with open(CSV_FILE, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            products.append(row)
-    
-    # Generate each product page and build JSON data
-    products_json = []
-    
-    for product in products:
-        # Get slug from either 'id' or 'slug' column (flexible)
-        slug = product.get('id') or product.get('slug')
-        if not slug:
-            print(f"⚠️ Skipping product: missing id/slug column")
-            continue
-            
-        name = product.get('name', '')
-        brand = product.get('brand', 'Daje Games')
-        category = product.get('category', 'Claw Machine')
-        price = int(product.get('price', 0))
-        main_image = product.get('main_image', '')
-        
-        # Split comma-separated fields (handle empty values)
-        gallery_list = [img.strip() for img in product.get('gallery_images', '').split(',') if img.strip()]
-        color_list = [c.strip() for c in product.get('colors', '').split(',') if c.strip()]
-        color_hex_list = [h.strip() for h in product.get('color_hex', '').split(',') if h.strip()]
-        options_list = [o.strip() for o in product.get('options', '').split(',') if o.strip()]
-        features_list = [f.strip() for f in product.get('feature_details', '').split(',') if f.strip()]
-        
-        stock = product.get('stock_status', 'in-stock')
-        description = product.get('full_description', '')
-        collection = product.get('collection', '')
-        
-        # Thai fields
-        name_th = product.get('name_th', '')
-        description_th = product.get('full_description_th', '')
-        
-        # Stock text mapping
-        stock_map = {
-            'in-stock': 'In Stock · Ready to Ship',
-            'pre-order': 'Pre-Order · Reserve Now',
-            'out-stock': 'Out of Stock · Contact Us'
-        }
-        stock_text = stock_map.get(stock, 'In Stock')
-        
-        # Generate thumbnails HTML
-        thumbnails = '\n'.join([
-            f'<img src="{img}" class="thumbnail {"active" if i == 0 else ""}" onclick="changeImage(this.src)">'
-            for i, img in enumerate(gallery_list)
-        ]) if gallery_list else '<div class="thumbnail-placeholder">No additional images</div>'
-        
-        # Generate features HTML
-        features_html = '\n'.join([
-            f'<li><i class="fas fa-check-circle"></i> {f}</li>'
-            for f in features_list
-        ])
-        
-        # Generate color swatches HTML
-        default_color = color_list[0] if color_list else "Black"
-        color_swatches = '\n'.join([
-            f'<div class="color-swatch {"selected" if i == 0 else ""}" style="background: {color_hex_list[i] if i < len(color_hex_list) else c}" data-color="{c}" onclick="selectColor(this, \'{c}\')"></div>'
-            for i, c in enumerate(color_list)
-        ])
-        
-        # Generate options buttons HTML
-        options_html = ''
-        if options_list:
-            options_buttons = []
-            for i, o in enumerate(options_list):
-                selected_class = 'selected' if i == 0 else ''
-                options_buttons.append(f'<div class="size-btn {selected_class}" data-option="{o}" onclick="selectOption(this, \'{o}\')">{o}</div>')
-            options_html = f'''
-            <div class="size-options">
-                <h3>Options</h3>
-                <div class="size-buttons">
-                    {''.join(options_buttons)}
-                </div>
-            </div>'''
-        
-        # Generate recommendations (all other products)
-        recommendations = []
-        for other in products:
-            other_slug = other.get('id') or other.get('slug')
-            if other_slug and other_slug != slug:
-                recommendations.append({
-                    'slug': other_slug,
-                    'name': other.get('name', ''),
-                    'price': int(other.get('price', 0)),
-                    'image': other.get('main_image', '')
-                })
-        
-        recommendations_html = '\n'.join([
-            f'<div class="recommend-card" onclick="location.href=\'/{rec["slug"]}.html\'">'
-            f'<img src="{rec["image"]}" class="recommend-card-image">'
-            f'<div class="recommend-card-info">'
-            f'<div class="recommend-card-name">{rec["name"]}</div>'
-            f'<div class="recommend-card-price">฿{rec["price"]:,}</div>'
-            f'</div></div>'
-            for rec in recommendations
-        ])
-        
-        # Generate the page
-        page_html = PRODUCT_TEMPLATE.format(
-            slug=slug,
-            name=name,
-            price=price,
-            description=description,
-            main_image=main_image,
-            thumbnails=thumbnails,
-            features_html=features_html,
-            color_swatches=color_swatches,
-            options_html=options_html,
-            default_color=default_color,
-            stock=stock,
-            stock_text=stock_text,
-            recommendations=recommendations_html,
-            recommendations_json=json.dumps(recommendations)
-        )
-        
-        # Write the file
-        output_file = f"{slug}.html"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(page_html)
-        print(f"✅ Generated {output_file}")
-        
-        # Add to JSON data for main page
-        products_json.append({
-            'id': slug,
-            'name': name,
-            'brand': brand,
-            'category': category,
-            'price': price,
-            'description': description,
-            'main_image': main_image,
-            'gallery_images': gallery_list,
-            'colors': color_list,
-            'color_hex': color_hex_list,
-            'options': options_list,
-            'stock_status': stock_text,
-            'stock_code': stock,
-            'collection': collection,
-            'name_th': name_th,
-            'description_th': description_th
+def generate_products_json(products):
+    """Generate products.json for main page dynamic loading"""
+    json_data = []
+    for p in products:
+        json_data.append({
+            'id': p['id'],
+            'name': p['name'],
+            'brand': p.get('brand', 'Daje Games'),
+            'category': p['category'],
+            'price': int(float(p['price'])) if p.get('price') else 0,
+            'main_image': p['main_image'],
+            'description': p['full_description'][:120] + '...' if len(p['full_description']) > 120 else p['full_description'],
+            'stock_status': p['stock_status']
         })
     
-    # Write products.json for main page
-    with open(JSON_FILE, 'w', encoding='utf-8') as f:
-        json.dump(products_json, f, ensure_ascii=False, indent=2)
-    print(f"✅ Generated {JSON_FILE}")
+    output_path = Path(__file__).parent.parent / 'products.json'
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
     
-    print("🎉 Daje product generation complete!")
+    print(f"✅ Generated: products.json ({len(json_data)} products)")
 
-if __name__ == "__main__":
+def main():
+    """Main execution"""
+    csv_path = Path(__file__).parent.parent / 'products.csv'
+    
+    if not csv_path.exists():
+        print(f"❌ Error: {csv_path} not found!")
+        print("Please create products.csv with required columns")
+        return
+    
+    products = []
+    with open(csv_path, 'r', encoding='utf-8-sig') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row.get('id'):
+                products.append(row)
+    
+    print(f"📦 Loaded {len(products)} products from CSV")
+    
+    # Generate products.json for main page
+    generate_products_json(products)
+    
+    # Create directories (no subfolders for Daje - all in root like Flow)
+    product_dir = Path(__file__).parent.parent
+    
+    # Generate individual product pages
+    for product in products:
+        try:
+            # English page
+            en_html = generate_product_page(product, lang='en')
+            en_path = product_dir / f"{slugify(product['name'])}.html"
+            with open(en_path, 'w', encoding='utf-8') as f:
+                f.write(en_html)
+            print(f"✅ Generated: {en_path}")
+            
+            # Thai page (if Thai content exists)
+            if product.get('name_th') and product.get('full_description_th'):
+                th_html = generate_product_page(product, lang='th')
+                th_dir = product_dir / 'th'
+                th_dir.mkdir(exist_ok=True)
+                th_path = th_dir / f"{slugify(product['name'])}.html"
+                with open(th_path, 'w', encoding='utf-8') as f:
+                    f.write(th_html)
+                print(f"✅ Generated: {th_path}")
+        except Exception as e:
+            print(f"❌ Error generating {product.get('name', 'unknown')}: {e}")
+            continue
+    
+    print("\n🎉 All product pages generated successfully!")
+    print("📁 products.json created for main page dynamic loading")
+
+if __name__ == '__main__':
     main()
