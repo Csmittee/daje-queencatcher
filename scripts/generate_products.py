@@ -1126,26 +1126,30 @@ def main():
     products_json = []
     
     for product in products:
-        # Map CSV fields (16-field structure)
-        slug = product['id']
-        name = product['name']
+        # Get slug from either 'id' or 'slug' column (flexible)
+        slug = product.get('id') or product.get('slug')
+        if not slug:
+            print(f"⚠️ Skipping product: missing id/slug column")
+            continue
+            
+        name = product.get('name', '')
         brand = product.get('brand', 'Daje Games')
         category = product.get('category', 'Claw Machine')
-        price = int(product['price'])
-        main_image = product['main_image']
+        price = int(product.get('price', 0))
+        main_image = product.get('main_image', '')
         
-        # Split comma-separated fields
-        gallery_list = [img.strip() for img in product['gallery_images'].split(',') if img.strip()]
-        color_list = [c.strip() for c in product['colors'].split(',') if c.strip()]
-        color_hex_list = [h.strip() for h in product['color_hex'].split(',') if h.strip()] if product.get('color_hex') else []
-        options_list = [o.strip() for o in product['options'].split(',') if o.strip()] if product.get('options') else []
-        features_list = [f.strip() for f in product['feature_details'].split(',') if f.strip()]
+        # Split comma-separated fields (handle empty values)
+        gallery_list = [img.strip() for img in product.get('gallery_images', '').split(',') if img.strip()]
+        color_list = [c.strip() for c in product.get('colors', '').split(',') if c.strip()]
+        color_hex_list = [h.strip() for h in product.get('color_hex', '').split(',') if h.strip()]
+        options_list = [o.strip() for o in product.get('options', '').split(',') if o.strip()]
+        features_list = [f.strip() for f in product.get('feature_details', '').split(',') if f.strip()]
         
-        stock = product['stock_status']
-        description = product['full_description']
+        stock = product.get('stock_status', 'in-stock')
+        description = product.get('full_description', '')
         collection = product.get('collection', '')
         
-        # Thai fields (for future bilingual support)
+        # Thai fields
         name_th = product.get('name_th', '')
         description_th = product.get('full_description_th', '')
         
@@ -1176,7 +1180,7 @@ def main():
             for i, c in enumerate(color_list)
         ])
         
-        # Generate options buttons HTML (fixed no backslash)
+        # Generate options buttons HTML
         options_html = ''
         if options_list:
             options_buttons = []
@@ -1194,12 +1198,13 @@ def main():
         # Generate recommendations (all other products)
         recommendations = []
         for other in products:
-            if other['id'] != slug:
+            other_slug = other.get('id') or other.get('slug')
+            if other_slug and other_slug != slug:
                 recommendations.append({
-                    'slug': other['id'],
-                    'name': other['name'],
-                    'price': int(other['price']),
-                    'image': other['main_image']
+                    'slug': other_slug,
+                    'name': other.get('name', ''),
+                    'price': int(other.get('price', 0)),
+                    'image': other.get('main_image', '')
                 })
         
         recommendations_html = '\n'.join([
