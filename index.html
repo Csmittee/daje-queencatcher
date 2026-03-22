@@ -31,22 +31,23 @@
         
         body {
             font-family: 'Quicksand', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
             min-height: 100vh;
             position: relative;
         }
         
-        /* Override injector dark overlay - COMPLETELY REMOVE IT */
+        /* Override injector dark overlay */
         body::before {
             display: none !important;
         }
         
-        /* Daje brand colors */
+        /* Daje brand colors - Light theme */
         :root {
             --daje-pink: #FFB6C1;
             --daje-gold: #D4AF37;
-            --daje-dark: #1a1a1a;
-            --daje-light: #f5f5f5;
+            --daje-dark: #333333;
+            --daje-light: #ffffff;
+            --daje-gray: #666666;
         }
         
         /* Floating Cart Button */
@@ -63,19 +64,19 @@
             justify-content: center;
             cursor: pointer;
             z-index: 1000;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.8);
         }
         
         .cart-floating:hover {
             transform: scale(1.1);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
         }
         
         .cart-floating i {
             font-size: 1.5rem;
-            color: #1a1a1a;
+            color: #333;
         }
         
         .cart-count {
@@ -83,7 +84,7 @@
             top: -5px;
             right: -5px;
             background: #D4AF37;
-            color: #1a1a1a;
+            color: #333;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -94,19 +95,20 @@
             font-weight: bold;
         }
         
-        /* Hero Section - Logo 20% larger */
+        /* Hero Section */
         .hero {
             text-align: center;
             padding: 3rem 2rem 2rem;
             position: relative;
             z-index: 10;
+            background: transparent;
         }
         
         .hero-logo {
             max-width: 360px;
             width: 100%;
             margin-bottom: 1.5rem;
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
             transition: transform 0.3s ease;
         }
         
@@ -119,7 +121,7 @@
             color: #FFB6C1;
             margin-bottom: 0.5rem;
             font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
         }
         
         .hero p {
@@ -138,9 +140,7 @@
             z-index: 10;
         }
         
-        /* No filter section - removed as requested */
-        
-        /* Product Grid - Larger cards for fewer products */
+        /* Product Grid */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -149,24 +149,22 @@
         }
         
         .product-card {
-            background: rgba(30, 30, 35, 0.95);
-            backdrop-filter: blur(10px);
+            background: #ffffff;
             border-radius: 24px;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            border: 1px solid rgba(255,182,193,0.3);
+            border: 1px solid #f0f0f0;
             position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         
         .product-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.1);
             border-color: #FFB6C1;
-            background: rgba(40, 40, 45, 0.98);
         }
         
         .product-image {
@@ -174,7 +172,7 @@
             height: 280px;
             object-fit: cover;
             transition: transform 0.4s ease;
-            background: #2a2a2a;
+            background: #fafafa;
         }
         
         .product-card:hover .product-image {
@@ -191,7 +189,7 @@
         .product-name {
             font-size: 1.4rem;
             font-weight: 800;
-            color: #FFB6C1;
+            color: #333;
             margin-bottom: 0.5rem;
             line-height: 1.3;
         }
@@ -209,7 +207,7 @@
         }
         
         .product-desc {
-            color: #aaa;
+            color: #666;
             font-size: 0.85rem;
             line-height: 1.5;
             margin-bottom: 1rem;
@@ -218,7 +216,7 @@
         
         .stock-badge {
             display: inline-block;
-            background: rgba(212,175,55,0.2);
+            background: rgba(212,175,55,0.15);
             color: #D4AF37;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -230,7 +228,7 @@
         
         .view-details {
             background: linear-gradient(135deg, #FFB6C1, #FF99AA);
-            color: #1a1a1a;
+            color: #333;
             padding: 0.7rem 1.5rem;
             border-radius: 40px;
             font-weight: 700;
@@ -258,7 +256,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.5);
             z-index: 10001;
             justify-content: center;
             align-items: center;
@@ -273,12 +271,12 @@
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
-            background: #2a2a2a;
+            background: #ffffff;
             border-radius: 32px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255,182,193,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         
         .cart-header {
@@ -290,14 +288,14 @@
         }
         
         .cart-header h2 {
-            color: #1a1a1a;
+            color: #333;
             font-size: 1.3rem;
         }
         
         .cart-close {
             font-size: 1.5rem;
             cursor: pointer;
-            color: #1a1a1a;
+            color: #333;
             font-weight: bold;
         }
         
@@ -305,14 +303,13 @@
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
-            color: #fff;
         }
         
         .cart-item {
             display: flex;
             gap: 1rem;
             padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #eee;
         }
         
         .cart-item-image {
@@ -328,7 +325,7 @@
         
         .cart-item-name {
             font-weight: 700;
-            color: #FFB6C1;
+            color: #333;
             margin-bottom: 0.25rem;
         }
         
@@ -347,16 +344,16 @@
             width: 28px;
             height: 28px;
             border-radius: 8px;
-            background: #3a3a3a;
-            border: 1px solid #FFB6C1;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
             cursor: pointer;
-            color: #FFB6C1;
+            color: #333;
         }
         
         .cart-summary {
             padding: 1.5rem;
-            background: #1f1f1f;
-            border-top: 2px solid rgba(255,182,193,0.3);
+            background: #fafafa;
+            border-top: 2px solid #f0f0f0;
         }
         
         .cart-total {
@@ -365,13 +362,13 @@
             font-size: 1.2rem;
             font-weight: 800;
             margin-bottom: 1rem;
-            color: #fff;
+            color: #333;
         }
         
         .btn-quotation {
             width: 100%;
             background: linear-gradient(135deg, #FFB6C1, #FF99AA);
-            color: #1a1a1a;
+            color: #333;
             border: none;
             padding: 1rem;
             border-radius: 60px;
@@ -391,7 +388,7 @@
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: #D4AF37;
-            color: #1a1a1a;
+            color: #333;
             padding: 0.8rem 1.5rem;
             border-radius: 60px;
             font-weight: 600;
@@ -402,6 +399,39 @@
         
         .toast.show {
             transform: translateX(-50%) translateY(0);
+        }
+        
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .lightbox.active {
+            display: flex;
+        }
+        
+        .lightbox-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
         }
         
         /* Responsive */
@@ -472,7 +502,7 @@
             <div style="padding: 2rem; text-align: center;">
                 <i class="fas fa-envelope" style="font-size: 3rem; color: #D4AF37; margin-bottom: 1rem;"></i>
                 <h3 style="color: #FFB6C1; margin-bottom: 0.5rem;">Thank You!</h3>
-                <p style="color: #aaa; margin-bottom: 1rem;">We've received your quotation request.</p>
+                <p style="color: #666; margin-bottom: 1rem;">We've received your quotation request.</p>
                 <p style="color: #888; font-size: 0.9rem;">Our team will contact you within 24 hours.</p>
                 <button class="btn-quotation" style="margin-top: 1.5rem;" onclick="closeQuotationModal()">
                     Continue Shopping
@@ -518,7 +548,7 @@
                         </div>
                         <div class="cart-item-actions">
                             <button class="cart-qty-btn" onclick="updateCartItem(${idx}, -1)">-</button>
-                            <span style="color:#fff;">${item.quantity}</span>
+                            <span>${item.quantity}</span>
                             <button class="cart-qty-btn" onclick="updateCartItem(${idx}, 1)">+</button>
                             <i class="fas fa-trash-alt" onclick="removeCartItem(${idx})" style="color: #F44336; cursor: pointer;"></i>
                         </div>
