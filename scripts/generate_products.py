@@ -40,6 +40,11 @@ PRODUCT_TEMPLATE = """<!DOCTYPE html>
             padding: 1rem;
         }}
         
+        /* Override dark overlay for Daje */
+        body::before {{
+            background: rgba(0, 0, 0, 0.05) !important;
+        }}
+        
         .cart-floating {{
             position: fixed;
             bottom: 2rem;
@@ -1171,14 +1176,18 @@ def main():
             for i, c in enumerate(color_list)
         ])
         
-        # Generate options buttons HTML
+        # Generate options buttons HTML (fixed no backslash)
         options_html = ''
         if options_list:
+            options_buttons = []
+            for i, o in enumerate(options_list):
+                selected_class = 'selected' if i == 0 else ''
+                options_buttons.append(f'<div class="size-btn {selected_class}" data-option="{o}" onclick="selectOption(this, \'{o}\')">{o}</div>')
             options_html = f'''
             <div class="size-options">
                 <h3>Options</h3>
                 <div class="size-buttons">
-                    {"".join([f'<div class="size-btn {"selected" if i == 0 else ""}" data-option="{o}" onclick="selectOption(this, \'{o}\')">{o}</div>' for i, o in enumerate(options_list)])}
+                    {''.join(options_buttons)}
                 </div>
             </div>'''
         
