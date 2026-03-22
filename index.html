@@ -623,6 +623,9 @@
                 document.getElementById('product-grid').innerHTML = '<div style="text-align:center;padding:2rem;color:#FFB6C1;">Loading products...</div>';
             }
         }
+        function slugify(name) {
+            return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
         
         function renderProducts() {
             const grid = document.getElementById('product-grid');
@@ -633,8 +636,8 @@
                 return;
             }
             
-            grid.innerHTML = products.map(p => `
-                <div class="product-card" onclick="location.href='/${p.id}.html'">
+        grid.innerHTML = products.map(p => `
+            <div class="product-card" onclick="location.href='/${slugify(p.name)}.html'">        
                     <img src="${p.main_image}" class="product-image" alt="${p.name}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status || 'In Stock'}</div>
