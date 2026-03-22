@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "id": "daje-1",
+    "name": "Deluxe Candy Claw Machine",
+    "brand": "Daje Games",
+    "category": "Claw Machine",
+    "price": 15900,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
+    "description": "Standard",
+    "stock_status": "Adjustable claw strength,Colorful LED lights,Coin mechanism,Durable construction"
+  },
+  {
+    "id": "daje-2",
+    "name": "Junior Prize Vending",
+    "brand": "Daje Games",
+    "category": "Vending Machine",
+    "price": 8900,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
+    "description": "Compact vending machine perfect for small prizes and toys. Easy to operate and maintain.",
+    "stock_status": "In Stock"
+  },
+  {
+    "id": "daje-3",
+    "name": "Plush Catcher Pro",
+    "brand": "Daje Games",
+    "category": "Claw Machine",
+    "price": 22500,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
+    "description": "Pro",
+    "stock_status": "Precision control,Adjustable difficulty,Large prize area,Commercial grade"
+  },
+  {
+    "id": "daje-4",
+    "name": "LED Prize Tower",
+    "brand": "Daje Games",
+    "category": "Vending Machine",
+    "price": 12500,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
+    "description": "Eye-catching LED prize tower machine. Rotating display and easy prize dispensing.",
+    "stock_status": "Pre-order"
+  },
+  {
+    "id": "daje-5",
+    "name": "Kids Fun Catcher",
+    "brand": "Daje Games",
+    "category": "Claw Machine",
+    "price": 6900,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
+    "description": "Kid-friendly claw machine with simple controls and colorful design. Perfect for children's entertainment.",
+    "stock_status": "In Stock"
+  },
+  {
+    "id": "daje-6",
+    "name": "Mini Gacha Dispenser",
+    "brand": "Daje Games",
+    "category": "Vending Machine",
+    "price": 4500,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
+    "description": "Compact gacha capsule dispenser. Perfect for small toys and collectibles.",
+    "stock_status": "Low Stock"
+  }
+]
