@@ -2,61 +2,73 @@
   {
     "id": "daje-1",
     "name": "Deluxe Candy Claw Machine",
+    "name_th": "In Stock",
     "brand": "Daje Games",
     "category": "Claw Machine",
     "price": 15900,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
     "description": "Standard",
+    "description_th": "เครื่องหยอดเหรียญดีลักซ์",
     "stock_status": "Adjustable claw strength,Colorful LED lights,Coin mechanism,Durable construction"
   },
   {
     "id": "daje-2",
     "name": "Junior Prize Vending",
+    "name_th": "เครื่องขายของอัตโนมัติจูเนียร์",
     "brand": "Daje Games",
     "category": "Vending Machine",
     "price": 8900,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
     "description": "Compact vending machine perfect for small prizes and toys. Easy to operate and maintain.",
+    "description_th": "เครื่องขายของอัตโนมัติขนาดกะทัดรัด เหมาะสำหรับรางวัลเล็กและของเล่น",
     "stock_status": "In Stock"
   },
   {
     "id": "daje-3",
     "name": "Plush Catcher Pro",
+    "name_th": "In Stock",
     "brand": "Daje Games",
     "category": "Claw Machine",
     "price": 22500,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
     "description": "Pro",
+    "description_th": "เครื่องหยอดเหรียญมืออาชีพ",
     "stock_status": "Precision control,Adjustable difficulty,Large prize area,Commercial grade"
   },
   {
     "id": "daje-4",
     "name": "LED Prize Tower",
+    "name_th": "หอคอยรางวัล LED",
     "brand": "Daje Games",
     "category": "Vending Machine",
     "price": 12500,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
     "description": "Eye-catching LED prize tower machine. Rotating display and easy prize dispensing.",
+    "description_th": "หอคอยรางวัล LED สวยงาม พร้อมไฟและระบบจ่ายรางวัลอัตโนมัติ",
     "stock_status": "Pre-order"
   },
   {
     "id": "daje-5",
     "name": "Kids Fun Catcher",
+    "name_th": "เครื่องหยอดเหรียญสำหรับเด็ก",
     "brand": "Daje Games",
     "category": "Claw Machine",
     "price": 6900,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
     "description": "Kid-friendly claw machine with simple controls and colorful design. Perfect for children's entertainment.",
+    "description_th": "เครื่องหยอดเหรียญสำหรับเด็ก ควบคุมง่าย สีสันสดใส",
     "stock_status": "In Stock"
   },
   {
     "id": "daje-6",
     "name": "Mini Gacha Dispenser",
+    "name_th": "เครื่องจำหน่ายแคปซูลมินิ",
     "brand": "Daje Games",
     "category": "Vending Machine",
     "price": 4500,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png",
     "description": "Compact gacha capsule dispenser. Perfect for small toys and collectibles.",
+    "description_th": "เครื่องจำหน่ายแคปซูลขนาดกะทัดรัด เหมาะสำหรับของเล่นขนาดเล็กและของสะสม",
     "stock_status": "Low Stock"
   }
 ]
