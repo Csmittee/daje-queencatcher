@@ -121,7 +121,6 @@
             color: #FFB6C1;
             margin-bottom: 0.5rem;
             font-weight: 700;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
         }
         
         .hero p {
@@ -131,13 +130,101 @@
             letter-spacing: 1px;
         }
         
-        /* Main Container */
-        .container {
+        .hero .btn-contact {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFB6C1, #FF99AA);
+            color: #333;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .hero .btn-contact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,182,193,0.4);
+        }
+        
+        /* Section Styles */
+        .section {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 1rem 2rem 3rem;
-            position: relative;
-            z-index: 10;
+            padding: 3rem 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #FFB6C1;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        /* Game Center Hero Section */
+        .gamecenter-hero {
+            background: linear-gradient(135deg, #fff5f7 0%, #ffffff 100%);
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+            margin: 2rem auto;
+        }
+        
+        .gamecenter-image {
+            flex: 1;
+            min-width: 280px;
+        }
+        
+        .gamecenter-image img {
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .gamecenter-content {
+            flex: 1;
+            padding: 1rem;
+        }
+        
+        .gamecenter-content h2 {
+            font-size: 1.8rem;
+            color: #FFB6C1;
+            margin-bottom: 1rem;
+        }
+        
+        .gamecenter-content h3 {
+            font-size: 1.2rem;
+            color: #D4AF37;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #555;
+        }
+        
+        .feature-list li i {
+            color: #D4AF37;
+            width: 24px;
         }
         
         /* Product Grid */
@@ -145,7 +232,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 2rem;
-            margin-top: 1rem;
+            margin-top: 2rem;
         }
         
         .product-card {
@@ -170,9 +257,10 @@
         .product-image {
             width: 100%;
             height: 280px;
-            object-fit: cover;
-            transition: transform 0.4s ease;
+            object-fit: contain;
             background: #fafafa;
+            padding-top: 20px;
+            transition: transform 0.4s ease;
         }
         
         .product-card:hover .product-image {
@@ -209,9 +297,36 @@
         .product-desc {
             color: #666;
             font-size: 0.85rem;
-            line-height: 1.5;
+            line-height: 1.4;
             margin-bottom: 1rem;
             flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .product-desc.expanded {
+            white-space: normal;
+            background: white;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            padding: 0.75rem;
+            margin-top: -0.75rem;
+            margin-right: -0.75rem;
+            margin-bottom: 0.5rem;
+            margin-left: -0.75rem;
+            border-radius: 12px;
+        }
+        
+        .read-more {
+            color: #D4AF37;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-left: 0.25rem;
         }
         
         .stock-badge {
@@ -248,7 +363,200 @@
             box-shadow: 0 4px 12px rgba(255,182,193,0.3);
         }
         
-        /* Cart Modal Styles */
+        /* Factory Gallery - Smooth Scroll */
+        .factory-gallery {
+            background: #fafafa;
+            border-radius: 32px;
+            padding: 2rem;
+            margin: 2rem auto;
+            overflow: hidden;
+        }
+        
+        .gallery-track {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 1rem;
+        }
+        
+        .gallery-track::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .gallery-track::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 10px;
+        }
+        
+        .gallery-track::-webkit-scrollbar-thumb {
+            background: #FFB6C1;
+            border-radius: 10px;
+        }
+        
+        .gallery-item {
+            flex: 0 0 280px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .gallery-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .gallery-nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .gallery-nav-btn:hover {
+            background: #FFB6C1;
+            border-color: #FFB6C1;
+        }
+        
+        /* Innovation Section */
+        .innovation-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .innovation-item {
+            text-align: center;
+        }
+        
+        .innovation-item img {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .innovation-double {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            text-align: center;
+        }
+        
+        .innovation-double img {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Partner Section */
+        .partner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .partner-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .partner-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .partner-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .partner-card h4 {
+            padding: 1rem;
+            color: #FFB6C1;
+            font-size: 1.2rem;
+        }
+        
+        .partner-card p {
+            padding: 0 1rem 1rem;
+            color: #666;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #FFB6C1, #FF99AA);
+            border-radius: 48px;
+            padding: 3rem 2rem;
+            margin: 3rem auto;
+            text-align: center;
+            color: #333;
+        }
+        
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-section p {
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .cta-images {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .cta-images img {
+            max-width: 300px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-quote {
+            display: inline-block;
+            background: #333;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        
+        .btn-quote:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Cart Modal */
         .cart-modal {
             display: none;
             position: fixed;
@@ -401,7 +709,6 @@
             transform: translateX(-50%) translateY(0);
         }
         
-        /* Lightbox */
         .lightbox {
             display: none;
             position: fixed;
@@ -434,7 +741,6 @@
             cursor: pointer;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .hero-logo {
                 max-width: 280px;
@@ -451,6 +757,16 @@
                 bottom: 1rem;
                 right: 1rem;
             }
+            .gamecenter-hero {
+                flex-direction: column;
+                text-align: center;
+            }
+            .innovation-double {
+                grid-template-columns: 1fr;
+            }
+            .gallery-item {
+                flex: 0 0 240px;
+            }
         }
     </style>
 </head>
@@ -460,14 +776,144 @@
         <span class="cart-count" id="cartCount">0</span>
     </div>
     
+    <!-- SECTION 1: Hero -->
     <div class="hero">
         <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png" class="hero-logo" alt="Daje Games">
-        <h1>Happiness You Can Catch</h1>
-        <p>Premium Claw Machines & Vending Equipment</p>
+        <h1>Daje not only create new gaming experiences</h1>
+        <p>We innovate and deliver happiness to you with products that meet your need</p>
+        <a href="https://janishammer.com/contact" class="btn-contact">Contact us for more details</a>
     </div>
     
-    <div class="container">
+    <!-- SECTION 2: Game Center Display -->
+    <div class="section">
+        <div class="gamecenter-hero">
+            <div class="gamecenter-image">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285870/gamecenter_display_snailtime_showroom.jpg" alt="Game Center Display">
+            </div>
+            <div class="gamecenter-content">
+                <h2>Amazing game center comes with great equipments</h2>
+                <h3>We provide variety of products that meet your need</h3>
+                <ul class="feature-list">
+                    <li><i class="fas fa-wifi"></i> Online capability for 2 ways communication and controls</li>
+                    <li><i class="fas fa-shield-alt"></i> Industrial standard safety feature built</li>
+                    <li><i class="fas fa-microchip"></i> Advance programmable system for great experiences</li>
+                    <li><i class="fas fa-chart-line"></i> All of this for the same price level in the market</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SECTION 3: Snailtime Products -->
+    <div class="section">
+        <div class="gamecenter-hero" style="flex-direction: row-reverse;">
+            <div class="gamecenter-image">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285882/3king-combo-snailtime.jpg" alt="Snailtime Series">
+            </div>
+            <div class="gamecenter-content">
+                <h2>Introduce our Snailtime Claw machine series</h2>
+                <h3>Our selected products</h3>
+            </div>
+        </div>
+        
+        <!-- Product Grid -->
         <div id="product-grid" class="product-grid"></div>
+    </div>
+    
+    <!-- SECTION 4: Our Factory -->
+    <div class="section">
+        <h2 class="section-title">Our Factory</h2>
+        <p class="section-subtitle">We import and built in Thailand with full support from Snailtime China</p>
+        
+        <div class="factory-gallery">
+            <div class="gallery-track" id="factoryGalleryTrack">
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/shop-3')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/shop-3" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/bat_display_02')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/bat_display_02" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/bat_display_01')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/bat_display_01" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/team_02')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/team_02" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/the_making_of_batman')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/the_making_of_batman" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/the_maing_02')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/the_maing_02" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/factory-4')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/factory-4" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/factory-7')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/factory-7" alt="Factory">
+                </div>
+                <div class="gallery-item" onclick="openLightbox('https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_600,w_600/f_jpg/clawmachine-production-1')">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/c_fill,h_280,w_280/f_jpg/clawmachine-production-1" alt="Factory">
+                </div>
+            </div>
+            <div class="gallery-nav">
+                <button class="gallery-nav-btn" onclick="scrollGallery(-1)"><i class="fas fa-chevron-left"></i></button>
+                <button class="gallery-nav-btn" onclick="scrollGallery(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SECTION 5: Innovation -->
+    <div class="section">
+        <h2 class="section-title">Our next coming Innovation</h2>
+        
+        <div class="innovation-grid">
+            <div class="innovation-item">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285864/New_gashapon_01.jpg" alt="New Gashapon 4P">
+                <p><strong>New Gashapon 4P</strong> - Coming April 2026</p>
+            </div>
+            
+            <div class="innovation-double">
+                <div class="innovation-item">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285844/ai_gen_1.jpg" alt="AI Gashapon">
+                    <p>AI integration Gashapon with touch screen</p>
+                </div>
+                <div class="innovation-item">
+                    <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285845/ai_gen_2.jpg" alt="AI Gashapon">
+                    <p>AI integration Gashapon with touch screen</p>
+                </div>
+            </div>
+            
+            <div class="innovation-item">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285843/ai_gashapon_giant_1.jpg" alt="Super Large Gashapon">
+                <p>Super large Gashapon project</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SECTION 6: CTA & Partners -->
+    <div class="section">
+        <div class="cta-section">
+            <h2>Whether you want to own nice game in your living room or open a new game center</h2>
+            <p>We can provide complete solution from design, budget, and installation including after sale services either onsite or online.</p>
+            <div class="cta-images">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285881/new_model_02.jpg" alt="New Model">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285886/4fee1a90af64bb69c5c56c0ff698e079.jpg" alt="Installation">
+            </div>
+            <a href="https://janishammer.com/contact" class="btn-quote">Get Your Quote Today</a>
+        </div>
+        
+        <h2 class="section-title">Our Partners</h2>
+        <div class="partner-grid">
+            <div class="partner-card">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285903/IMG_5843.heic" alt="Buddy Land">
+                <h4>Buddy Land</h4>
+                <p>New shop at Fashion Island Ramindra, Bangkok</p>
+            </div>
+            <div class="partner-card">
+                <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285859/daje_shop_02.jpg" alt="Daje Shop Pattaya">
+                <h4>Daje Shop Pattaya</h4>
+                <p>Your destination for premium gaming experience</p>
+            </div>
+        </div>
     </div>
     
     <!-- CART MODAL -->
@@ -511,11 +957,26 @@
         </div>
     </div>
     
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-img" id="lightboxImg">
+    </div>
+    
     <div id="toast" class="toast"></div>
     
     <script>
         let cart = JSON.parse(localStorage.getItem('dajeCart')) || [];
         let products = [];
+        
+        function slugify(name) {
+            return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
+        
+        function truncateDescription(desc, maxLength = 100) {
+            if (!desc) return 'Premium quality machine';
+            if (desc.length <= maxLength) return desc;
+            return desc.substring(0, maxLength);
+        }
         
         function updateCartUI() {
             const count = cart.reduce((s, i) => s + i.quantity, 0);
@@ -623,9 +1084,6 @@
                 document.getElementById('product-grid').innerHTML = '<div style="text-align:center;padding:2rem;color:#FFB6C1;">Loading products...</div>';
             }
         }
-        function slugify(name) {
-            return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        }
         
         function renderProducts() {
             const grid = document.getElementById('product-grid');
@@ -636,26 +1094,59 @@
                 return;
             }
             
-        grid.innerHTML = products.map(p => `
-            <div class="product-card" onclick="location.href='/${slugify(p.name)}.html'">        
+            grid.innerHTML = products.map(p => {
+                const shortDesc = truncateDescription(p.description, 100);
+                const hasMore = p.description && p.description.length > 100;
+                return `
+                <div class="product-card" onclick="location.href='/${slugify(p.name)}.html'">
                     <img src="${p.main_image}" class="product-image" alt="${p.name}">
                     <div class="product-info">
-                        <div class="stock-badge">${p.stock_status || 'In Stock'}</div>
+                        <div class="stock-badge">${p.stock_status || 'Pre-order'}</div>
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${p.price.toLocaleString()}</div>
-                        <p class="product-desc">${p.description ? p.description.substring(0, 80) : 'Premium quality machine'}</p>
+                        <div class="product-desc" onclick="event.stopPropagation(); this.classList.add('expanded')">
+                            ${shortDesc}
+                            ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')"> ...read more</span>' : ''}
+                        </div>
                         <button class="view-details" onclick="event.stopPropagation(); addToCart({id:'${p.id}', name:'${p.name}', price:${p.price}, image:'${p.main_image}'})">
                             <i class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
+        }
+        
+        // Gallery scroll function
+        function scrollGallery(direction) {
+            const track = document.getElementById('factoryGalleryTrack');
+            if (!track) return;
+            const scrollAmount = track.clientWidth * 0.8;
+            track.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+        
+        function openLightbox(url) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImg');
+            if (img) img.src = url;
+            if (lb) lb.classList.add('active');
+        }
+        
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
         }
         
         document.getElementById('cartFloating').addEventListener('click', openCart);
         
         loadProducts();
         updateCartUI();
+        
+        // Make functions global
+        window.scrollGallery = scrollGallery;
+        window.openLightbox = openLightbox;
+        window.closeLightbox = closeLightbox;
     </script>
 </body>
 </html>
