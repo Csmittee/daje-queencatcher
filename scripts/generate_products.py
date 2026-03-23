@@ -1,21 +1,31 @@
 #!/usr/bin/env python3
 """
 Product Page Generator for Daje Games
-Compact layout with close button (no navbar)
+Compact layout with close button - pages in root folder
 """
 
 import csv
 import json
 import re
+import shutil
 from pathlib import Path
 
 def slugify(name):
     return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
 
 def parse_csv_list(value):
+    """Parse line-break or comma-separated values (AirTable format uses line breaks)"""
     if not value or value == '':
         return []
-    return [item.strip() for item in str(value).split(',')]
+    # Line break split first (AirTable format)
+    if '\n' in str(value):
+        return [item.strip() for item in str(value).split('\n') if item.strip()]
+    # Comma split (fallback)
+    elif ',' in str(value):
+        return [item.strip() for item in str(value).split(',') if item.strip()]
+    # Single value
+    else:
+        return [str(value).strip()] if str(value).strip() else []
 
 def parse_color_swatches(colors_str, hex_str):
     colors = parse_csv_list(colors_str)
@@ -88,17 +98,19 @@ def generate_product_page(product, lang='en'):
         stock_labels = {'In Stock': 'มีสินค้า', 'Low Stock': 'สินค้าใกล้หมด', 'Out of Stock': 'สินค้าหมด', 'Pre-order': 'สั่งจองล่วงหน้า'}
         stock_status_text = stock_labels.get(product['stock_status'], product['stock_status'])
         back_link = '/th/'
+        # Use Thai feature details if available
+        feature_details_raw = product.get('feature_details_th', product.get('feature_details', ''))
     else:
         name = product['name']
         description = product['full_description']
         lang_prefix = ''
         stock_status_text = product['stock_status']
         back_link = '/'
+        feature_details_raw = product.get('feature_details', '')
     
     gallery_images = parse_csv_list(product.get('gallery_images', ''))
     colors_data = parse_color_swatches(product.get('colors', ''), product.get('color_hex', ''))
     sizes = parse_csv_list(product.get('options', ''))
-    feature_details_raw = product.get('feature_details', '')
     
     default_color = colors_data[0]['name'] if colors_data else 'Default'
     default_size = sizes[0] if sizes else 'Standard'
@@ -332,10 +344,20 @@ def generate_product_page(product, lang='en'):
 def generate_products_json(products):
     json_data = []
     for p in products:
+        # Get Thai description short version
+        thai_desc = p.get('full_description_th', p.get('full_description', ''))
+        thai_desc_short = thai_desc[:120] + '...' if len(thai_desc) > 120 else thai_desc
+        
         json_data.append({
-            'id': p['id'], 'name': p['name'], 'brand': p.get('brand', 'Daje Games'),
-            'category': p['category'], 'price': int(float(p['price'])) if p.get('price') else 0,
-            'main_image': p['main_image'], 'description': p['full_description'][:120] + '...' if len(p['full_description']) > 120 else p['full_description'],
+            'id': p['id'],
+            'name': p['name'],
+            'name_th': p.get('name_th', p['name']),
+            'brand': p.get('brand', 'Daje Games'),
+            'category': p['category'],
+            'price': int(float(p['price'])) if p.get('price') else 0,
+            'main_image': p['main_image'],
+            'description': p['full_description'][:120] + '...' if len(p['full_description']) > 120 else p['full_description'],
+            'description_th': thai_desc_short,
             'stock_status': p['stock_status']
         })
     with open(Path(__file__).parent.parent / 'products.json', 'w', encoding='utf-8') as f:
@@ -344,9 +366,30 @@ def generate_products_json(products):
 
 def main():
     csv_path = Path(__file__).parent.parent / 'products.csv'
+    
     if not csv_path.exists():
         print(f"❌ Error: {csv_path} not found!")
         return
+    
+    # ===== CLEAN OLD FILES =====
+    product_dir = Path(__file__).parent.parent
+    th_dir = product_dir / 'th'
+    
+    # Delete existing product HTML files in root
+    for file in product_dir.glob('*.html'):
+        # Don't delete index.html
+        if file.name != 'index.html':
+            file.unlink()
+            print(f"🗑️  Deleted: {file}")
+    
+    # Delete existing Thai product files
+    if th_dir.exists():
+        for file in th_dir.glob('*.html'):
+            file.unlink()
+            print(f"🗑️  Deleted: {file}")
+    
+    print(f"📁 Cleaned old product files")
+    # ===== END CLEAN =====
     
     products = []
     with open(csv_path, 'r', encoding='utf-8-sig') as f:
@@ -358,19 +401,18 @@ def main():
     print(f"📦 Loaded {len(products)} products from CSV")
     generate_products_json(products)
     
-    product_dir = Path(__file__).parent.parent
-    product_dir.mkdir(exist_ok=True)
-    
+    # Generate individual product pages
     for product in products:
         try:
+            # English page
             en_html = generate_product_page(product, lang='en')
             en_path = product_dir / f"{slugify(product['name'])}.html"
             with open(en_path, 'w', encoding='utf-8') as f:
                 f.write(en_html)
             print(f"✅ Generated: {en_path}")
             
+            # Thai page (if Thai content exists)
             if product.get('name_th') and product.get('full_description_th'):
-                th_dir = product_dir / 'th'
                 th_dir.mkdir(exist_ok=True)
                 th_html = generate_product_page(product, lang='th')
                 th_path = th_dir / f"{slugify(product['name'])}.html"
