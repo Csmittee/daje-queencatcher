@@ -141,10 +141,12 @@
                 <span class="product-category">Gashapon</span>
                 <h1 class="product-name">แกชาพอน 4P</h1>
                 <div class="product-brand"><i class="fas fa-tag"></i><span>Snailtime · </span></div>
-                <div class="product-price">29,000</div>
-                <div class="stock-status in-stock"><i class="fas fa-exclamation-circle"></i><span>1</span></div>
+                <div class="product-price">28,500</div>
+                <div class="stock-status in-stock"><i class="fas fa-exclamation-circle"></i><span>0</span></div>
                 <div class="features-section"><h3>Specifications</h3><div class="features-list">1) ขนาด กว้าง 70 ซม.
-รายละเอียดเพิ่มเติมกำลังจะมาเร็วๆ นี้ คาดว่าจะเปิดตัวเมษายน 2569</div></div>
+รายละเอียดเพิ่มเติมกำลังจะมาเร็วๆ นี้ คาดว่าจะเปิดตัวเมษายน 2569
+ราคารวม ที่หรับเหรียญ 
+ไม่รวมส่งในประเทศ</div></div>
                 
     <div class="color-options">
         <h3>Color Options</h3>
@@ -173,17 +175,17 @@
                 <div class="recommend-card-price">23,500</div>
             </div>
         </div>
-        <div class="recommend-card" onclick="location.href='/th/superman.html'">
-            <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294643/superman-1.png" class="recommend-card-image">
-            <div class="recommend-card-info">
-                <div class="recommend-card-name">ซูเปอร์แมน</div>
-                <div class="recommend-card-price">32,000</div>
-            </div>
-        </div>
         <div class="recommend-card" onclick="location.href='/th/aquaman.html'">
             <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294722/aquaman-1.png" class="recommend-card-image">
             <div class="recommend-card-info">
                 <div class="recommend-card-name">อควาแมน</div>
+                <div class="recommend-card-price">32,000</div>
+            </div>
+        </div>
+        <div class="recommend-card" onclick="location.href='/th/superman.html'">
+            <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294643/superman-1.png" class="recommend-card-image">
+            <div class="recommend-card-info">
+                <div class="recommend-card-name">ซูเปอร์แมน</div>
                 <div class="recommend-card-price">35,000</div>
             </div>
         </div>
@@ -191,7 +193,7 @@
             <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294652/Raptor_tall.png" class="recommend-card-image">
             <div class="recommend-card-info">
                 <div class="recommend-card-name">แร็ปเตอร์ 3P สูง</div>
-                <div class="recommend-card-price">25,500</div>
+                <div class="recommend-card-price">31,400</div>
             </div>
         </div></div><div class="slider-nav"><button class="nav-btn" onclick="scrollSlider(-1)"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" onclick="scrollSlider(1)"><i class="fas fa-chevron-right"></i></button></div></div>
     </div>
@@ -206,7 +208,7 @@
         let currentColor = "Black";
         let currentSize = "Wifi std";
         let currentQuantity = 1;
-        const currentProduct = { id: 'DJ-06-G4P', name: "แกชาพอน 4P", price: 29000, image: "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285868/new_gashapon_dim_4p.png", colors: ["Black", "White"], sizes: ["Wifi std"] };
+        const currentProduct = { id: 'DJ-06-G4P', name: "แกชาพอน 4P", price: 28500, image: "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285868/new_gashapon_dim_4p.png", colors: ["Black", "White"], sizes: ["Wifi std"] };
         
         function updateCartUI() { const count = cart.reduce((s,i)=>s+i.quantity,0); document.getElementById('cartCount').innerText=count; localStorage.setItem('dajeCart',JSON.stringify(cart)); renderCartItems(); }
         function renderCartItems() { const container=document.getElementById('cartItems'),totalSpan=document.getElementById('cartTotal'); if(!container) return; if(cart.length===0){ container.innerHTML='<div style="text-align:center;padding:1rem;">Your cart is empty</div>'; if(totalSpan) totalSpan.innerText='฿0'; return; } let total=0; container.innerHTML=cart.map((item,idx)=>{ const itemTotal=item.price*item.quantity; total+=itemTotal; return `<div class="cart-item"><img src="${item.image}" class="cart-item-image"><div class="cart-item-details"><div class="cart-item-name">${item.name}</div><div class="cart-item-price">฿${item.price.toLocaleString()}</div></div><div class="cart-item-actions"><button class="cart-qty-btn" onclick="updateCartItem(${idx},-1)">-</button><span>${item.quantity}</span><button class="cart-qty-btn" onclick="updateCartItem(${idx},1)">+</button><i class="fas fa-trash-alt" onclick="removeCartItem(${idx})" style="color:#F44336;cursor:pointer;"></i></div></div>`; }).join(''); if(totalSpan) totalSpan.innerText=`฿${total.toLocaleString()}`; }

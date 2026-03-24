@@ -12,27 +12,27 @@
     "stock_status": "15"
   },
   {
-    "id": "DJ-02-SM",
-    "name": "Superman",
-    "name_th": "ซูเปอร์แมน",
-    "brand": "Snailtime",
-    "category": "Claw machine",
-    "price": 32000,
-    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294643/superman-1.png",
-    "description": "Aquaman is midsize between batman and superman, full transparent body with the width of 85 cm and 205 cm height. Equipme...",
-    "description_th": "ซูเปอร์แมนเป็นเครื่องจักรขนาดกลางระหว่างแบทแมนและอควาแมน ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 85 ซม. สูง 205 ซม. มาพร้อมระบบไ...",
-    "stock_status": "3"
-  },
-  {
-    "id": "DJ-03-AM",
+    "id": "DJ-02-AM",
     "name": "Aquaman",
     "name_th": "อควาแมน",
     "brand": "Snailtime",
     "category": "Claw machine",
-    "price": 35000,
+    "price": 32000,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294722/aquaman-1.png",
     "description": "Superman is the largest of its kind, full transparent body with the width of 96 cm and 205 cm height. Equipment with bui...",
     "description_th": "ซูเปอร์แมนเป็นเครื่องจักรที่ใหญ่ที่สุดในตระกูล ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 96 ซม. สูง 205 ซม. มาพร้อมระบบไวไฟในตัวที...",
+    "stock_status": "3"
+  },
+  {
+    "id": "DJ-03-SM",
+    "name": "Superman",
+    "name_th": "ซูเปอร์แมน",
+    "brand": "Snailtime",
+    "category": "Claw machine",
+    "price": 35000,
+    "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294643/superman-1.png",
+    "description": "Aquaman is midsize between batman and superman, full transparent body with the width of 85 cm and 205 cm height. Equipme...",
+    "description_th": "ซูเปอร์แมนเป็นเครื่องจักรขนาดกลางระหว่างแบทแมนและอควาแมน ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 85 ซม. สูง 205 ซม. มาพร้อมระบบไ...",
     "stock_status": "3"
   },
   {
@@ -41,11 +41,11 @@
     "name_th": "แร็ปเตอร์ 3P สูง",
     "brand": "Snailtime",
     "category": "Gashapon",
-    "price": 25500,
+    "price": 31400,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294652/Raptor_tall.png",
     "description": "Raptor 3P has one large compartment and built in 3 disc for gashapon size between 6 cm to 10 cm. The disc can be customi...",
     "description_th": "แร็ปเตอร์ 3P มีช่องขนาดใหญ่ 1 ช่อง และแผ่นจ่ายแกชาพอน 3 แผ่น สำหรับแกชาพอนขนาด 6-10 ซม. สามารถปรับแต่งแผ่นจ่ายให้มีขนาดต...",
-    "stock_status": "1"
+    "stock_status": "0"
   },
   {
     "id": "DJ-05-RPS",
@@ -53,11 +53,11 @@
     "name_th": "แร็ปเตอร์ 3P เตี้ย",
     "brand": "Snailtime",
     "category": "Gashapon",
-    "price": 23500,
+    "price": 27300,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294652/raptor_short.png",
     "description": "Raptor 3P has 3 large compartment and built in 3 disc for gashapon size between 6 cm to 10 cm. The disc can be customize...",
     "description_th": "แร็ปเตอร์ 3P มีช่องขนาดใหญ่ 3 ช่อง และแผ่นจ่ายแกชาพอน 3 แผ่น สำหรับแกชาพอนขนาด 6-10 ซม. สามารถปรับแต่งแผ่นจ่ายให้มีขนาดต...",
-    "stock_status": "1"
+    "stock_status": "0"
   },
   {
     "id": "DJ-06-G4P",
@@ -65,10 +65,10 @@
     "name_th": "แกชาพอน 4P",
     "brand": "Snailtime",
     "category": "Gashapon",
-    "price": 29000,
+    "price": 28500,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285868/new_gashapon_dim_4p.png",
     "description": "Rapter 4 P comes with 4 compartment single pay point that can select any location from single panel. Suitable for more g...",
     "description_th": "แร็ปเตอร์ 4P มาพร้อม 4 ช่อง จ่ายเงินครั้งเดียวสามารถเลือกหยิบจากตำแหน่งใดก็ได้จากแผงควบคุมเดียว เหมาะสำหรับรุ่นของเล่นที...",
-    "stock_status": "1"
+    "stock_status": "0"
   }
 ]
