@@ -12,15 +12,11 @@
     <meta property="og:image" content="https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png">
     <meta property="og:url" content="https://daje.janishammer.com">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts - Quicksand for Daje -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- INJECTORS -->
-    <script src="https://assets.janishammer.com/js/injector-core.js"></script>
+    <!-- Anti-flicker: hides page until injector builds correct navbar -->
+    <style id="jh-anti-flicker">body { opacity: 0; }</style>
+    <!-- INJECTORS (config must load before core) -->
     <script src="https://assets.janishammer.com/js/injector-config.js"></script>
+    <script src="https://assets.janishammer.com/js/injector-core.js"></script>
     
     <style>
         * {
@@ -1059,15 +1055,22 @@
                 return;
             }
             
+            // Detect language from URL so product links, names, and
+            // descriptions all match the current language automatically.
+            const isThai = window.location.pathname.startsWith('/th/');
+            const langPrefix = isThai ? '/th' : '';
+            
             grid.innerHTML = products.map(p => {
-                const shortDesc = truncateDescription(p.description, 100);
-                const hasMore = p.description && p.description.length > 100;
+                const displayName = (isThai && p.name_th) ? p.name_th : p.name;
+                const rawDesc = (isThai && p.description_th) ? p.description_th : p.description;
+                const shortDesc = truncateDescription(rawDesc, 100);
+                const hasMore = rawDesc && rawDesc.length > 100;
                 return `
-                <div class="product-card" onclick="location.href='/${slugify(p.name)}.html'">
-                    <img src="${p.main_image}" class="product-image" alt="${p.name}">
+                <div class="product-card" onclick="location.href='${langPrefix}/${slugify(p.name)}.html'">
+                    <img src="${p.main_image}" class="product-image" alt="${displayName}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status || 'Pre-order'}</div>
-                        <div class="product-name">${p.name}</div>
+                        <div class="product-name">${displayName}</div>
                         <div class="product-price">${p.price.toLocaleString()}</div>
                         <div class="product-desc" onclick="event.stopPropagation(); this.classList.add('expanded')">
                             ${shortDesc}
