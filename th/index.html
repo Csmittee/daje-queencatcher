@@ -12,15 +12,12 @@
     <meta property="og:image" content="https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png">
     <meta property="og:url" content="https://daje.janishammer.com/th/">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Anti-flicker: hides page until injector builds correct navbar -->
+    <style id="jh-anti-flicker">body { opacity: 0; }</style>
     
-    <!-- Google Fonts - Quicksand for Daje -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- INJECTORS -->
-    <script src="https://assets.janishammer.com/js/injector-core.js"></script>
+    <!-- INJECTORS (config must load before core) -->
     <script src="https://assets.janishammer.com/js/injector-config.js"></script>
+    <script src="https://assets.janishammer.com/js/injector-core.js"></script>
     
     <style>
         * {
@@ -31,19 +28,15 @@
         
         body {
             font-family: 'Quicksand', sans-serif;
-          
             min-height: 100vh;
             position: relative;
         }
-        
-       
         
         :root {
             --daje-pink: #FFB6C1;
             --daje-gold: #D4AF37;
             --daje-dark: #333333;
         }
-        
        
         .hero {
             text-align: center;
