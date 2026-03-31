@@ -88,7 +88,7 @@ def generate_size_options(sizes):
     </div>
     '''
 
-def generate_product_page(product, lang='en'):
+def generate_product_page(product, all_products, lang='en'):
     """Generate compact product detail page with close button"""
     
     if lang == 'th':
@@ -97,7 +97,7 @@ def generate_product_page(product, lang='en'):
         lang_prefix = '/th'
         stock_labels = {'In Stock': 'มีสินค้า', 'Low Stock': 'สินค้าใกล้หมด', 'Out of Stock': 'สินค้าหมด', 'Pre-order': 'สั่งจองล่วงหน้า'}
         stock_status_text = stock_labels.get(product['stock_status'], product['stock_status'])
-        back_link = '/th/'
+        back_link = 'https://daje.janishammer.com/th/'
         # Use Thai feature details if available
         feature_details_raw = product.get('feature_details_th', product.get('feature_details', ''))
     else:
@@ -105,7 +105,7 @@ def generate_product_page(product, lang='en'):
         description = product['full_description']
         lang_prefix = ''
         stock_status_text = product['stock_status']
-        back_link = '/'
+        back_link = 'https://daje.janishammer.com/'
         feature_details_raw = product.get('feature_details', '')
     
     gallery_images = parse_csv_list(product.get('gallery_images', ''))
@@ -120,16 +120,7 @@ def generate_product_page(product, lang='en'):
     
     price_value = int(float(product['price'])) if product.get('price') else 0
     
-    # Recommendations
-    all_products = []
-    csv_path = Path(__file__).parent.parent / 'products.csv'
-    if csv_path.exists():
-        with open(csv_path, 'r', encoding='utf-8-sig') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if 'id' in row and row['id']:
-                    all_products.append(row)
-    
+    # Recommendations — passed in from main() to avoid re-reading CSV on every call
     product_id = product.get('id', '')
     recommendations = [p for p in all_products if p.get('id', '') != product_id][:4]
     
@@ -159,8 +150,11 @@ def generate_product_page(product, lang='en'):
     <meta property="og:description" content="{description[:150]}">
     <meta property="og:image" content="{product['main_image']}">
     <meta property="og:url" content="https://daje.janishammer.com{lang_prefix}/{slugify(product['name'])}.html">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Anti-flicker: hides page until injector builds correct navbar -->
+    <style id="jh-anti-flicker">body {{ opacity: 0; }}</style>
+    <!-- INJECTORS (config must load before core) -->
+    <script src="https://assets.janishammer.com/js/injector-config.js"></script>
+    <script src="https://assets.janishammer.com/js/injector-core.js"></script>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
@@ -405,7 +399,7 @@ def main():
     for product in products:
         try:
             # English page
-            en_html = generate_product_page(product, lang='en')
+            en_html = generate_product_page(product, products, lang='en')
             en_path = product_dir / f"{slugify(product['name'])}.html"
             with open(en_path, 'w', encoding='utf-8') as f:
                 f.write(en_html)
@@ -414,7 +408,7 @@ def main():
             # Thai page (if Thai content exists)
             if product.get('name_th') and product.get('full_description_th'):
                 th_dir.mkdir(exist_ok=True)
-                th_html = generate_product_page(product, lang='th')
+                th_html = generate_product_page(product, products, lang='th')
                 th_path = th_dir / f"{slugify(product['name'])}.html"
                 with open(th_path, 'w', encoding='utf-8') as f:
                     f.write(th_html)
