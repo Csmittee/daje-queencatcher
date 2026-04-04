@@ -703,45 +703,73 @@
         }
         
        /* ================ MOBILE FIXES FOR GAMECENTER HERO (English only) ================ */
-        @media (max-width: 768px) {
-            .daje-page .gamecenter-hero {
-                flex-direction: column !important;     /* stack image on top of content */
-                gap: 1.5rem;
+       @media (max-width: 768px) {
+            .hero-logo {
+                max-width: 280px;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+            .cart-floating {
+                width: 50px;
+                height: 50px;
+                bottom: 1rem;
+                right: 1rem;
+            }
+            .gamecenter-hero {
+                flex-direction: column !important;
                 text-align: center;
-                padding: 1rem 0.75rem;
+                gap: 1.5rem;
+                padding: 1.5rem 1rem !important;     /* tighter and consistent */
             }
             
-            .daje-page .gamecenter-hero[style*="row-reverse"] {
-                flex-direction: column !important;     /* force even the reversed one to stack normally */
+            /* Force the row-reverse section (used in English) */
+            .gamecenter-hero[style*="row-reverse"] {
+                flex-direction: column !important;
             }
             
-            .daje-page .gamecenter-image {
+            .gamecenter-image {
                 width: 100% !important;
-                max-width: 100%;
-                margin: 0 auto;
+                min-width: 100% !important;
             }
             
-            .daje-page .gamecenter-image img {
-                display: block;
-                width: 100%;
+            .gamecenter-image img {
+                width: 100% !important;
                 height: auto;
-                border-radius: 12px;   /* optional: nicer look */
+                border-radius: 20px;
             }
             
-            .daje-page .gamecenter-content {
+            .gamecenter-content {
                 width: 100% !important;
                 padding: 0 0.5rem;
             }
             
-            .daje-page .gamecenter-content h2,
-            .daje-page .gamecenter-content h3 {
-                text-align: center;
+            .innovation-double {
+                grid-template-columns: 1fr;
+            }
+            .gallery-item {
+                flex: 0 0 240px;
             }
             
-            .daje-page .feature-list {
-                text-align: left;
-                max-width: 520px;
-                margin: 1.5rem auto;
+            /* Anti-zigzag protection - very important */
+            .section {
+                padding: 2rem 1rem !important;
+                margin: 0 auto;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .daje-page .container, 
+            .daje-page .section {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            body {
+                overflow-x: hidden;
             }
         }
     </style>
