@@ -1037,6 +1037,7 @@
             }
         }
         
+        // Changed: product URL paths → /th/product/[slug].html 2026-06-26
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
@@ -1052,7 +1053,7 @@
                 const shortDesc = truncateDescription(thaiDesc, 100);
                 const hasMore = thaiDesc && thaiDesc.length > 100;
                 return `
-                <div class="product-card" onclick="location.href='/th/${slugify(p.name)}.html'">
+                <div class="product-card" onclick="location.href='/th/product/${slugify(p.name)}.html'">
                     <img src="${p.main_image}" class="product-image" alt="${thaiName}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status === 'Pre-order' ? 'สั่งจองล่วงหน้า' : (p.stock_status === 'In Stock' ? 'มีสินค้า' : 'สินค้าหมด')}</div>
@@ -1060,7 +1061,7 @@
                         <div class="product-price">${p.price.toLocaleString()}</div>
                         <div class="product-desc" onclick="event.stopPropagation(); this.classList.add('expanded')">
                             ${shortDesc}
-                            ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')"> ...อ่านเพิ่มเติม</span>' : ''}
+                            ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')" > ...อ่านเพิ่มเติม</span>' : ''}
                         </div>
                         <button class="view-details" onclick="event.stopPropagation(); addToCart({id:'${p.id}', name:'${thaiName}', name_th:'${thaiName}', price:${p.price}, image:'${p.main_image}'})">
                             <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
