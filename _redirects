@@ -1,0 +1,26 @@
+# Restructure redirects — 2026-06-26
+# Product pages moved from root to /product/ and /th/product/
+/aquaman.html /product/aquaman.html 301
+/batman.html /product/batman.html 301
+/deluxe-candy-claw-machine.html /product/deluxe-candy-claw-machine.html 301
+/gashapon-4p.html /product/gashapon-4p.html 301
+/junior-prize-vending.html /product/junior-prize-vending.html 301
+/kids-fun-catcher.html /product/kids-fun-catcher.html 301
+/led-prize-tower.html /product/led-prize-tower.html 301
+/mini-gacha-dispenser.html /product/mini-gacha-dispenser.html 301
+/plush-catcher-pro.html /product/plush-catcher-pro.html 301
+/raptor-3p-short.html /product/raptor-3p-short.html 301
+/raptor-3p-tall.html /product/raptor-3p-tall.html 301
+/superman.html /product/superman.html 301
+/th/aquaman.html /th/product/aquaman.html 301
+/th/batman.html /th/product/batman.html 301
+/th/deluxe-candy-claw-machine.html /th/product/deluxe-candy-claw-machine.html 301
+/th/gashapon-4p.html /th/product/gashapon-4p.html 301
+/th/junior-prize-vending.html /th/product/junior-prize-vending.html 301
+/th/kids-fun-catcher.html /th/product/kids-fun-catcher.html 301
+/th/led-prize-tower.html /th/product/led-prize-tower.html 301
+/th/mini-gacha-dispenser.html /th/product/mini-gacha-dispenser.html 301
+/th/plush-catcher-pro.html /th/product/plush-catcher-pro.html 301
+/th/raptor-3p-short.html /th/product/raptor-3p-short.html 301
+/th/raptor-3p-tall.html /th/product/raptor-3p-tall.html 301
+/th/superman.html /th/product/superman.html 301

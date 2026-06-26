@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
 Product Page Generator for Daje Games
-Compact layout with close button - pages in root folder
+Compact layout with close button
+RESTRUCTURE 2026-06-26: output moved from repo root to /product/ and /th/product/
+Old paths: /[slug].html and /th/[slug].html
+New paths: /product/[slug].html and /th/product/[slug].html
 """
 
 import csv
@@ -17,20 +20,16 @@ def parse_csv_list(value):
     """Parse line-break or comma-separated values (AirTable format uses line breaks)"""
     if not value or value == '':
         return []
-    # Line break split first (AirTable format)
     if '\n' in str(value):
         return [item.strip() for item in str(value).split('\n') if item.strip()]
-    # Comma split (fallback)
     elif ',' in str(value):
         return [item.strip() for item in str(value).split(',') if item.strip()]
-    # Single value
     else:
         return [str(value).strip()] if str(value).strip() else []
 
 def parse_color_swatches(colors_str, hex_str):
     colors = parse_csv_list(colors_str)
     hexes = parse_csv_list(hex_str)
-    
     if len(hexes) == len(colors) and hexes:
         return [{'name': colors[i], 'hex': hexes[i]} for i in range(len(colors))]
     else:
@@ -50,7 +49,6 @@ def generate_thumbnails(gallery_images, main_image):
         if img and img not in seen:
             seen.add(img)
             unique_images.append(img)
-    
     for img in unique_images:
         active_class = 'active' if img == main_image else ''
         thumbs.append(f'<img src="{img}" class="thumbnail {active_class}" onclick="changeImage(this.src)">')
@@ -62,7 +60,7 @@ def generate_color_options(colors_data):
     swatches = []
     for i, color in enumerate(colors_data):
         selected_class = 'selected' if i == 0 else ''
-        swatches.append(f'<div class="color-swatch {selected_class}" style="background: {color["hex"]}" data-color="{color["name"]}" onclick="selectColor(this, \'{color["name"]}\')"></div>')
+        swatches.append(f'<div class="color-swatch {selected_class}" style="background: {color["hex"]}" data-color="{color["name"]}" onclick="selectColor(this, \'{color["name"]}\')" ></div>')
     return f'''
     <div class="color-options">
         <h3>Color Options</h3>
@@ -78,7 +76,7 @@ def generate_size_options(sizes):
     buttons = []
     for i, size in enumerate(sizes):
         selected_class = 'selected' if i == 0 else ''
-        buttons.append(f'<div class="size-btn {selected_class}" data-size="{size}" onclick="selectSize(this, \'{size}\')">{size}</div>')
+        buttons.append(f'<div class="size-btn {selected_class}" data-size="{size}" onclick="selectSize(this, \'{size}\')"> {size}</div>')
     return f'''
     <div class="size-options">
         <h3>Available Options</h3>
@@ -89,8 +87,9 @@ def generate_size_options(sizes):
     '''
 
 def generate_product_page(product, all_products, lang='en'):
+    # Changed: og:url and rec card links updated to /product/ paths 2026-06-26
     """Generate compact product detail page with close button"""
-    
+
     if lang == 'th':
         name = product.get('name_th', product['name'])
         description = product.get('full_description_th', product['full_description'])
@@ -98,7 +97,6 @@ def generate_product_page(product, all_products, lang='en'):
         stock_labels = {'In Stock': 'มีสินค้า', 'Low Stock': 'สินค้าใกล้หมด', 'Out of Stock': 'สินค้าหมด', 'Pre-order': 'สั่งจองล่วงหน้า'}
         stock_status_text = stock_labels.get(product['stock_status'], product['stock_status'])
         back_link = 'https://daje.janishammer.com/th/'
-        # Use Thai feature details if available
         feature_details_raw = product.get('feature_details_th', product.get('feature_details', ''))
     else:
         name = product['name']
@@ -107,38 +105,36 @@ def generate_product_page(product, all_products, lang='en'):
         stock_status_text = product['stock_status']
         back_link = 'https://daje.janishammer.com/'
         feature_details_raw = product.get('feature_details', '')
-    
+
     gallery_images = parse_csv_list(product.get('gallery_images', ''))
     colors_data = parse_color_swatches(product.get('colors', ''), product.get('color_hex', ''))
     sizes = parse_csv_list(product.get('options', ''))
-    
+
     default_color = colors_data[0]['name'] if colors_data else 'Default'
     default_size = sizes[0] if sizes else 'Standard'
-    
+
     stock_class = {'In Stock': 'in-stock', 'Low Stock': 'low-stock', 'Out of Stock': 'out-stock', 'Pre-order': 'pre-order'}.get(product['stock_status'], 'in-stock')
     stock_icon = 'check-circle' if product['stock_status'] == 'In Stock' else 'clock' if product['stock_status'] == 'Pre-order' else 'exclamation-circle'
-    
+
     price_value = int(float(product['price'])) if product.get('price') else 0
-    
-    # Recommendations — passed in from main() to avoid re-reading CSV on every call
+
     product_id = product.get('id', '')
     recommendations = [p for p in all_products if p.get('id', '') != product_id][:4]
-    
+
     rec_html = ''
     for rec in recommendations:
         rec_name = rec['name'] if lang == 'en' else rec.get('name_th', rec['name'])
         rec_slug = slugify(rec['name'])
         rec_price = int(float(rec['price'])) if rec.get('price') else 0
         rec_html += f'''
-        <div class="recommend-card" onclick="location.href='{lang_prefix}/{rec_slug}.html'">
+        <div class="recommend-card" onclick="location.href='{lang_prefix}/product/{rec_slug}.html'">
             <img src="{rec.get('main_image', '')}" class="recommend-card-image">
             <div class="recommend-card-info">
                 <div class="recommend-card-name">{rec_name}</div>
                 <div class="recommend-card-price">{rec_price:,}</div>
             </div>
         </div>'''
-    
-    # DAJE BRAND COLORS
+
     html = f'''<!DOCTYPE html>
 <html lang="{lang}">
 <head>
@@ -149,7 +145,7 @@ def generate_product_page(product, all_products, lang='en'):
     <meta property="og:title" content="{name}">
     <meta property="og:description" content="{description[:150]}">
     <meta property="og:image" content="{product['main_image']}">
-    <meta property="og:url" content="https://daje.janishammer.com{lang_prefix}/{slugify(product['name'])}.html">
+    <meta property="og:url" content="https://daje.janishammer.com{lang_prefix}/product/{slugify(product['name'])}.html">
     <!-- Anti-flicker: hides page until injector builds correct navbar -->
     <style id="jh-anti-flicker">body {{ opacity: 0; }}</style>
     <!-- INJECTORS (config must load before core) -->
@@ -267,7 +263,7 @@ def generate_product_page(product, all_products, lang='en'):
 <body>
     <a href="{back_link}" class="close-btn">&times;</a>
     <div class="cart-floating" id="cartFloating"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></div>
-    
+
     <div class="product-container">
         <div class="product-detail">
             <div class="product-gallery">
@@ -282,7 +278,7 @@ def generate_product_page(product, all_products, lang='en'):
             <div class="product-info">
                 <span class="product-category">{product['category']}</span>
                 <h1 class="product-name">{name}</h1>
-                <div class="product-brand"><i class="fas fa-tag"></i><span>{product.get('brand', 'Daje Games')} · {product.get('collection', 'Premium')}</span></div>
+                <div class="product-brand"><i class="fas fa-tag"></i><span>{product.get('brand', 'Daje Games')} &middot; {product.get('collection', 'Premium')}</span></div>
                 <div class="product-price">{price_value:,}</div>
                 <div class="stock-status {stock_class}"><i class="fas fa-{stock_icon}"></i><span>{stock_status_text}</span></div>
                 <div class="features-section"><h3>Specifications</h3><div class="features-list">{feature_details_raw}</div></div>
@@ -292,27 +288,27 @@ def generate_product_page(product, all_products, lang='en'):
                 <div class="action-buttons"><button class="btn-add-to-cart" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button><button class="btn-wishlist" onclick="toggleWishlist(this)"><i class="far fa-heart"></i></button></div>
             </div>
         </div>
-        <div class="you-may-like"><h2>✨ You May Also Like</h2><div class="slider-track" id="sliderTrack">{rec_html}</div><div class="slider-nav"><button class="nav-btn" onclick="scrollSlider(-1)"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" onclick="scrollSlider(1)"><i class="fas fa-chevron-right"></i></button></div></div>
+        <div class="you-may-like"><h2>&#10024; You May Also Like</h2><div class="slider-track" id="sliderTrack">{rec_html}</div><div class="slider-nav"><button class="nav-btn" onclick="scrollSlider(-1)"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" onclick="scrollSlider(1)"><i class="fas fa-chevron-right"></i></button></div></div>
     </div>
-    
-    <div id="cartModal" class="cart-modal"><div class="cart-content"><div class="cart-header"><h2><i class="fas fa-shopping-bag"></i> Your Cart</h2><span class="cart-close" onclick="closeCart()">&times;</span></div><div class="cart-items" id="cartItems"><div style="text-align:center;padding:1rem;">Your cart is empty</div></div><div class="cart-summary"><div class="cart-total"><span>Total</span><span id="cartTotal">฿0</span></div><button class="btn-quotation" onclick="requestQuotation()"><i class="fas fa-file-invoice"></i> Get Quotation</button></div></div></div>
+
+    <div id="cartModal" class="cart-modal"><div class="cart-content"><div class="cart-header"><h2><i class="fas fa-shopping-bag"></i> Your Cart</h2><span class="cart-close" onclick="closeCart()">&times;</span></div><div class="cart-items" id="cartItems"><div style="text-align:center;padding:1rem;">Your cart is empty</div></div><div class="cart-summary"><div class="cart-total"><span>Total</span><span id="cartTotal">&#3647;0</span></div><button class="btn-quotation" onclick="requestQuotation()"><i class="fas fa-file-invoice"></i> Get Quotation</button></div></div></div>
     <div id="quotationModal" class="cart-modal"><div class="cart-content" style="max-width:400px;text-align:center;"><div class="cart-header"><h2><i class="fas fa-check-circle"></i> Thank You!</h2><span class="cart-close" onclick="closeQuotationModal()">&times;</span></div><div style="padding:1.5rem;"><i class="fas fa-envelope" style="font-size:2rem;color:#D4AF37;margin-bottom:0.5rem;"></i><p>We've received your quotation request.</p><p style="font-size:0.8rem;color:#888;">Our team will contact you within 24 hours.</p><button class="btn-quotation" style="margin-top:1rem;" onclick="closeQuotationModal()">Continue</button></div></div></div>
     <div id="lightbox" class="lightbox" onclick="closeLightbox()"><span class="lightbox-close">&times;</span><img class="lightbox-img" id="lightboxImg"></div>
     <div id="toast" class="toast"></div>
-    
+
     <script>
         let cart = JSON.parse(localStorage.getItem('dajeCart')) || [];
         let currentColor = "{default_color}";
         let currentSize = "{default_size}";
         let currentQuantity = 1;
         const currentProduct = {{ id: '{product.get('id', '')}', name: "{name}", price: {price_value}, image: "{product['main_image']}", colors: {json.dumps([c['name'] for c in colors_data])}, sizes: {json.dumps(sizes)} }};
-        
+
         function updateCartUI() {{ const count = cart.reduce((s,i)=>s+i.quantity,0); document.getElementById('cartCount').innerText=count; localStorage.setItem('dajeCart',JSON.stringify(cart)); renderCartItems(); }}
-        function renderCartItems() {{ const container=document.getElementById('cartItems'),totalSpan=document.getElementById('cartTotal'); if(!container) return; if(cart.length===0){{ container.innerHTML='<div style="text-align:center;padding:1rem;">Your cart is empty</div>'; if(totalSpan) totalSpan.innerText='฿0'; return; }} let total=0; container.innerHTML=cart.map((item,idx)=>{{ const itemTotal=item.price*item.quantity; total+=itemTotal; return `<div class="cart-item"><img src="${{item.image}}" class="cart-item-image"><div class="cart-item-details"><div class="cart-item-name">${{item.name}}</div><div class="cart-item-price">฿${{item.price.toLocaleString()}}</div></div><div class="cart-item-actions"><button class="cart-qty-btn" onclick="updateCartItem(${{idx}},-1)">-</button><span>${{item.quantity}}</span><button class="cart-qty-btn" onclick="updateCartItem(${{idx}},1)">+</button><i class="fas fa-trash-alt" onclick="removeCartItem(${{idx}})" style="color:#F44336;cursor:pointer;"></i></div></div>`; }}).join(''); if(totalSpan) totalSpan.innerText=`฿${{total.toLocaleString()}}`; }}
+        function renderCartItems() {{ const container=document.getElementById('cartItems'),totalSpan=document.getElementById('cartTotal'); if(!container) return; if(cart.length===0){{ container.innerHTML='<div style="text-align:center;padding:1rem;">Your cart is empty</div>'; if(totalSpan) totalSpan.innerText='&#3647;0'; return; }} let total=0; container.innerHTML=cart.map((item,idx)=>{{ const itemTotal=item.price*item.quantity; total+=itemTotal; return `<div class="cart-item"><img src="${{item.image}}" class="cart-item-image"><div class="cart-item-details"><div class="cart-item-name">${{item.name}}</div><div class="cart-item-price">&#3647;${{item.price.toLocaleString()}}</div></div><div class="cart-item-actions"><button class="cart-qty-btn" onclick="updateCartItem(${{idx}},-1)">-</button><span>${{item.quantity}}</span><button class="cart-qty-btn" onclick="updateCartItem(${{idx}},1)">+</button><i class="fas fa-trash-alt" onclick="removeCartItem(${{idx}})" style="color:#F44336;cursor:pointer;"></i></div></div>`; }}).join(''); if(totalSpan) totalSpan.innerText=`&#3647;${{total.toLocaleString()}}`; }}
         function updateCartItem(idx,ch) {{ const n=cart[idx].quantity+ch; if(n<=0) cart.splice(idx,1); else cart[idx].quantity=n; updateCartUI(); }}
         function removeCartItem(idx) {{ cart.splice(idx,1); updateCartUI(); }}
         function addToCart() {{ const existing=cart.find(i=>i.id===currentProduct.id&&i.color===currentColor&&i.size===currentSize); if(existing) existing.quantity+=currentQuantity; else cart.push({{id:currentProduct.id,name:currentProduct.name,price:currentProduct.price,image:currentProduct.image,color:currentColor,size:currentSize,quantity:currentQuantity}}); updateCartUI(); showToast(`Added ${{currentQuantity}} x ${{currentProduct.name}}`); }}
-        function requestQuotation() {{ if(cart.length===0){{ showToast('Add items first'); return; }} let items=cart.map(i=>`${{i.name}} (${{i.color}}, ${{i.size}}) x ${{i.quantity}} = ฿${{(i.price*i.quantity).toLocaleString()}}`).join('\\n'); let total=cart.reduce((s,i)=>s+i.price*i.quantity,0); window.location.href=`mailto:info@daje.janishammer.com?subject=Quotation Request&body=Hello,%0A%0AI would like a quotation for:%0A%0A${{encodeURIComponent(items)}}%0A%0ATotal: ฿${{total.toLocaleString()}}%0A%0APlease contact me.%0A%0ABest regards`; showToast('Opening email...'); }}
+        function requestQuotation() {{ if(cart.length===0){{ showToast('Add items first'); return; }} let items=cart.map(i=>`${{i.name}} (${{i.color}}, ${{i.size}}) x ${{i.quantity}} = &#3647;${{(i.price*i.quantity).toLocaleString()}}`).join('\\n'); let total=cart.reduce((s,i)=>s+i.price*i.quantity,0); window.location.href=`mailto:info@daje.janishammer.com?subject=Quotation Request&body=Hello,%0A%0AI would like a quotation for:%0A%0A${{encodeURIComponent(items)}}%0A%0ATotal: &#3647;${{total.toLocaleString()}}%0A%0APlease contact me.%0A%0ABest regards`; showToast('Opening email...'); }}
         function updateQuantity(ch) {{ let n=currentQuantity+ch; if(n>=1&&n<=99){{ currentQuantity=n; document.getElementById('quantity').value=currentQuantity; }} }}
         function selectColor(el,c) {{ document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected')); el.classList.add('selected'); currentColor=c; }}
         function selectSize(el,s) {{ document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); currentSize=s; }}
@@ -332,16 +328,15 @@ def generate_product_page(product, all_products, lang='en'):
     </script>
 </body>
 </html>'''
-    
+
     return html
+
 
 def generate_products_json(products):
     json_data = []
     for p in products:
-        # Get Thai description short version
         thai_desc = p.get('full_description_th', p.get('full_description', ''))
         thai_desc_short = thai_desc[:120] + '...' if len(thai_desc) > 120 else thai_desc
-        
         json_data.append({
             'id': p['id'],
             'name': p['name'],
@@ -358,65 +353,64 @@ def generate_products_json(products):
         json.dump(json_data, f, ensure_ascii=False, indent=2)
     print(f"✅ Generated products.json ({len(json_data)} products)")
 
+
 def main():
     csv_path = Path(__file__).parent.parent / 'products.csv'
-    
+
     if not csv_path.exists():
         print(f"❌ Error: {csv_path} not found!")
         return
-    
+
     # ===== CLEAN OLD FILES =====
+    # RESTRUCTURE 2026-06-26: clean /product/ and /th/product/ only — not repo root
     product_dir = Path(__file__).parent.parent
-    th_dir = product_dir / 'th'
-    
-    # Delete existing product HTML files in root
-    for file in product_dir.glob('*.html'):
-        # Don't delete index.html
-        if file.name != 'index.html':
-            file.unlink()
-            print(f"🗑️  Deleted: {file}")
-    
-    # Delete existing Thai product files
-    if th_dir.exists():
-        for file in th_dir.glob('*.html'):
-            file.unlink()
-            print(f"🗑️  Deleted: {file}")
-    
-    print(f"📁 Cleaned old product files")
+    en_product_dir = product_dir / 'product'
+    th_product_dir = product_dir / 'th' / 'product'
+
+    if en_product_dir.exists():
+        shutil.rmtree(en_product_dir)
+        print(f"\U0001f5d1️  Cleaned: product/")
+    en_product_dir.mkdir(exist_ok=True)
+
+    if th_product_dir.exists():
+        shutil.rmtree(th_product_dir)
+        print(f"\U0001f5d1️  Cleaned: th/product/")
+    th_product_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"\U0001f4c1 Cleaned old product files")
     # ===== END CLEAN =====
-    
+
     products = []
     with open(csv_path, 'r', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row.get('id'):
                 products.append(row)
-    
-    print(f"📦 Loaded {len(products)} products from CSV")
+
+    print(f"\U0001f4e6 Loaded {len(products)} products from CSV")
     generate_products_json(products)
-    
-    # Generate individual product pages
+
     for product in products:
         try:
-            # English page
+            # English page -> product/[slug].html
             en_html = generate_product_page(product, products, lang='en')
-            en_path = product_dir / f"{slugify(product['name'])}.html"
+            en_path = en_product_dir / f"{slugify(product['name'])}.html"
             with open(en_path, 'w', encoding='utf-8') as f:
                 f.write(en_html)
             print(f"✅ Generated: {en_path}")
-            
-            # Thai page (if Thai content exists)
+
+            # Thai page -> th/product/[slug].html (if Thai content exists)
             if product.get('name_th') and product.get('full_description_th'):
-                th_dir.mkdir(exist_ok=True)
                 th_html = generate_product_page(product, products, lang='th')
-                th_path = th_dir / f"{slugify(product['name'])}.html"
+                th_path = th_product_dir / f"{slugify(product['name'])}.html"
                 with open(th_path, 'w', encoding='utf-8') as f:
                     f.write(th_html)
                 print(f"✅ Generated: {th_path}")
         except Exception as e:
             print(f"❌ Error generating {product.get('name', 'unknown')}: {e}")
-    
-    print("\n🎉 All product pages generated successfully!")
+
+    print("\n\U0001f389 All product pages generated successfully!")
+
 
 if __name__ == '__main__':
     main()
