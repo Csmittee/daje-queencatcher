@@ -1110,6 +1110,7 @@
             }
         }
         
+        // Changed: product URL paths → /product/[slug].html 2026-06-26
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
@@ -1130,7 +1131,7 @@
                 const shortDesc = truncateDescription(rawDesc, 100);
                 const hasMore = rawDesc && rawDesc.length > 100;
                 return `
-                <div class="product-card" onclick="location.href='${langPrefix}/${slugify(p.name)}.html'">
+                <div class="product-card" onclick="location.href='${langPrefix}/product/${slugify(p.name)}.html'">
                     <img src="${p.main_image}" class="product-image" alt="${displayName}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status || 'Pre-order'}</div>
@@ -1138,7 +1139,7 @@
                         <div class="product-price">${p.price.toLocaleString()}</div>
                         <div class="product-desc" onclick="event.stopPropagation(); this.classList.add('expanded')">
                             ${shortDesc}
-                            ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')"> ...read more</span>' : ''}
+                            ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')" > ...read more</span>' : ''}
                         </div>
                         <button class="view-details" onclick="event.stopPropagation(); addToCart({id:'${p.id}', name:'${p.name}', price:${p.price}, image:'${p.main_image}'})">
                             <i class="fas fa-shopping-cart"></i> Add to Cart
