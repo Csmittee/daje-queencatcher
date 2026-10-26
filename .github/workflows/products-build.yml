@@ -32,6 +32,7 @@ jobs:
       
       - name: Commit and push changes
         # Changed: stage product/ and th/product/ (generated pages were never saved); DEP-6 retry loop 2026-10-26
+        # Changed: no [skip ci] in the commit message — Cloudflare Pages skips deploying commits that carry it 2026-10-26
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -40,7 +41,7 @@ jobs:
             echo "No generated changes to commit."
             exit 0
           fi
-          git commit -m "Auto-generate Daje product pages from CSV [skip ci]"
+          git commit -m "Auto-generate Daje product pages from CSV"
           for attempt in 1 2 3 4 5; do
             if git pull --rebase --autostash origin main && git push origin HEAD:main; then
               echo "Pushed on attempt $attempt."
