@@ -1,7 +1,16 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.3 — 2026-10-26
-> Changes: CC_SESSION_daje_urls_fix_v1 follow-up entry (QA fail — [skip ci])
-> Previous: Version 1.2 — 2026-10-26
+> Version 1.4 — 2026-10-26
+> Changes: CC_SESSION_daje_urls_fix_v1 deploy lesson entry (log only)
+> Previous: Version 1.3 — 2026-10-26
+
+---
+
+## 2026-10-26 — CC_SESSION_daje_urls_fix_v1 (deploy lesson — log only)
+**Did:** Log-only change. Evidence read (WF-9): owner Cloudflare screenshot — merge commit 443895c (PR #4) and branch commit 4ae9a96 show "No deployment available"; production still on 9e5e6cd. Cause: CC put the skip-ci tag text in the PR #4 title; GitHub copied it into the merge commit message, so Cloudflare Pages skipped that deploy too. The code on main is correct (12 product pages present). Merging this PR is meant to give Cloudflare a deployable commit.
+**Updated:** CC_CHAT_LOG.md, PROJECT_STATE.md
+**New files:** NONE
+**Pending Chat verify:** Owner checks Cloudflare for a green Production deploy of this PR's merge commit, then re-runs QA (PR #4 boxes). Chat to add a deploy rule: generator commits, PR titles and merge messages must not carry skip-ci tags where Cloudflare Pages deploys from main. Check janis-flow, whose workflow also carries it. Check i-flexthailand.com.
+**Flags:** CC ERROR — second failed attempt on the same symptom (owner rule: stop and ask; owner chose this log-only PR 2026-10-26). No rule file changed. NOT VERIFIED LIVE.
 
 ---
 
