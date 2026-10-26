@@ -31,9 +31,24 @@ jobs:
           python scripts/generate_products.py
       
       - name: Commit and push changes
+        # Changed: stage product/ and th/product/ (generated pages were never saved); DEP-6 retry loop 2026-10-26
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add *.html th/*.html products.json 2>/dev/null || true
-          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-generate Daje product pages from CSV [skip ci]"
-          git push
+          git add -A product/ th/product/ products.json
+          if git diff --staged --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+          git commit -m "Auto-generate Daje product pages from CSV [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push attempt $attempt failed — retrying in $((attempt * 5))s."
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push generated product pages after 5 attempts."
+          exit 1
