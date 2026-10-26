@@ -1,7 +1,16 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.2 — 2026-10-26
-> Changes: CC_SESSION_daje_urls_fix_v1 entry added
-> Previous: Version 1.1 — 2026-06-26
+> Version 1.3 — 2026-10-26
+> Changes: CC_SESSION_daje_urls_fix_v1 follow-up entry (QA fail — [skip ci])
+> Previous: Version 1.2 — 2026-10-26
+
+---
+
+## 2026-10-26 — CC_SESSION_daje_urls_fix_v1 (follow-up — owner QA fail, steps 2–6)
+**Did:** products-build.yml commit message no longer contains "[skip ci]". Evidence read (WF-9): owner Cloudflare screenshot — generator commit 9b1e75c "No deployment available"; production stayed on 9e5e6cd (no product/ folder) → product URLs showed the 404 page. Cloudflare Pages skips any commit whose message contains [skip ci]. GITHUB_TOKEN pushes do not start workflows, and product/ is outside the trigger paths, so no loop.
+**Updated:** .github/workflows/products-build.yml, CC_CHAT_LOG.md, PROJECT_STATE.md
+**New files:** NONE
+**Pending Chat verify:** Owner re-runs QA steps 2–7 and 9 after merge and a successful Cloudflare deploy of main.
+**Flags:** DEVIATION FROM PROMPT — order said keep [skip ci]; owner approved removal 2026-10-26. Workflow name/trigger unchanged (DEP-7 not triggered). NOT VERIFIED LIVE.
 
 ---
 
