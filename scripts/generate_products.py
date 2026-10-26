@@ -5,6 +5,8 @@ Compact layout with close button
 RESTRUCTURE 2026-06-26: output moved from repo root to /product/ and /th/product/
 Old paths: /[slug].html and /th/[slug].html
 New paths: /product/[slug].html and /th/product/[slug].html
+URLS 2026-10-26: public URLs are extensionless (/product/[slug], /th/product/[slug]);
+files on disk stay [slug].html — Cloudflare Pages serves them at the clean URL.
 """
 
 import csv
@@ -87,7 +89,7 @@ def generate_size_options(sizes):
     '''
 
 def generate_product_page(product, all_products, lang='en'):
-    # Changed: og:url and rec card links updated to /product/ paths 2026-06-26
+    # Changed: extensionless og:url + rec card links; canonical added 2026-10-26
     """Generate compact product detail page with close button"""
 
     if lang == 'th':
@@ -127,13 +129,15 @@ def generate_product_page(product, all_products, lang='en'):
         rec_slug = slugify(rec['name'])
         rec_price = int(float(rec['price'])) if rec.get('price') else 0
         rec_html += f'''
-        <div class="recommend-card" onclick="location.href='{lang_prefix}/product/{rec_slug}.html'">
+        <div class="recommend-card" onclick="location.href='{lang_prefix}/product/{rec_slug}'">
             <img src="{rec.get('main_image', '')}" class="recommend-card-image">
             <div class="recommend-card-info">
                 <div class="recommend-card-name">{rec_name}</div>
                 <div class="recommend-card-price">{rec_price:,}</div>
             </div>
         </div>'''
+
+    page_url = f"https://daje.janishammer.com{lang_prefix}/product/{slugify(product['name'])}"
 
     html = f'''<!DOCTYPE html>
 <html lang="{lang}">
@@ -145,7 +149,8 @@ def generate_product_page(product, all_products, lang='en'):
     <meta property="og:title" content="{name}">
     <meta property="og:description" content="{description[:150]}">
     <meta property="og:image" content="{product['main_image']}">
-    <meta property="og:url" content="https://daje.janishammer.com{lang_prefix}/product/{slugify(product['name'])}.html">
+    <link rel="canonical" href="{page_url}">
+    <meta property="og:url" content="{page_url}">
     <!-- Anti-flicker: hides page until injector builds correct navbar -->
     <style id="jh-anti-flicker">body {{ opacity: 0; }}</style>
     <!-- INJECTORS (config must load before core) -->

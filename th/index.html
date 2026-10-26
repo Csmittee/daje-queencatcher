@@ -11,6 +11,7 @@
     <meta property="og:description" content="ความสุขที่คุณจับต้องได้">
     <meta property="og:image" content="https://res.cloudinary.com/dfiomi0lb/image/upload/v1773931919/Daje-logo-original-nobg.png">
     <meta property="og:url" content="https://daje.janishammer.com/th/">
+    <link rel="canonical" href="https://daje.janishammer.com/th/">
     
     <!-- Anti-flicker: hides page until injector builds correct navbar -->
     <style id="jh-anti-flicker">body { opacity: 0; }</style>
@@ -1037,7 +1038,7 @@
             }
         }
         
-        // Changed: product URL paths → /th/product/[slug].html 2026-06-26
+        // Changed: product URL extensionless → /th/product/[slug] 2026-10-26
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
@@ -1053,7 +1054,7 @@
                 const shortDesc = truncateDescription(thaiDesc, 100);
                 const hasMore = thaiDesc && thaiDesc.length > 100;
                 return `
-                <div class="product-card" onclick="location.href='/th/product/${slugify(p.name)}.html'">
+                <div class="product-card" onclick="location.href='/th/product/${slugify(p.name)}'">
                     <img src="${p.main_image}" class="product-image" alt="${thaiName}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status === 'Pre-order' ? 'สั่งจองล่วงหน้า' : (p.stock_status === 'In Stock' ? 'มีสินค้า' : 'สินค้าหมด')}</div>

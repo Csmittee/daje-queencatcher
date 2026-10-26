@@ -1,7 +1,16 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.1 — 2026-06-26
-> Changes: Session A restructure entry added
-> Previous: 1.0
+> Version 1.2 — 2026-10-26
+> Changes: CC_SESSION_daje_urls_fix_v1 entry added
+> Previous: Version 1.1 — 2026-06-26
+
+---
+
+## 2026-10-26 — CC_SESSION_daje_urls_fix_v1
+**Did:** products-build.yml save step now stages product/ + th/product/ + products.json (root cause: generated pages never committed) + DEP-6 retry loop; generate_products.py extensionless og:url/rec links + one canonical; index.html L13–14 + L1114/L1135, th/index.html L14 + L1041/L1057 (canonical, og:url, card link); _redirects → 24 one-hop rules for the 6 CSV products; 404.html new; 24 stale root copies deleted (12 EN root, 12 th/).
+**Updated:** CC_CHAT_LOG.md, PROJECT_STATE.md
+**New files:** 404.html
+**Pending Chat verify:** Owner QA steps 1–10 after merge and a green "Daje Product Generator" run.
+**Flags:** SEO CHANGED. WF-3 EXCEPTION — one pipeline. NO injector change. Worker contract unchanged (DEP-7). OWNER DECISION 2026-10-26: 6 products not in products.csv (deluxe-candy-claw-machine, junior-prize-vending, kids-fun-catcher, led-prize-tower, mini-gacha-dispenser, plush-catcher-pro) get no redirect → 404. LARGE FILE — index.html 1185L, th/index.html 1105L (HTML-1, URL/head-only edits). SEO debt (not scheduled): hreflang, sitemap, schema, twitter cards, og:image. NOT VERIFIED LIVE — owner QA steps 1–10.
 
 ---
 
