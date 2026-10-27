@@ -19,8 +19,8 @@
     "category": "Claw machine",
     "price": 32000,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294722/aquaman-1.png",
-    "description": "Superman is the largest of its kind, full transparent body with the width of 96 cm and 205 cm height. Equipment with bui...",
-    "description_th": "ซูเปอร์แมนเป็นเครื่องจักรที่ใหญ่ที่สุดในตระกูล ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 96 ซม. สูง 205 ซม. มาพร้อมระบบไวไฟในตัวที...",
+    "description": "Aquaman is midsize between batman and superman, full transparent body with the width of 85 cm and 205 cm height. Equipme...",
+    "description_th": "อควาแมนเป็นเครื่องจักรขนาดกลางระหว่างแบทแมนและซูเปอร์แมน ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 85 ซม. สูง 205 ซม. มาพร้อมระบบไ...",
     "stock_status": "3"
   },
   {
@@ -31,8 +31,8 @@
     "category": "Claw machine",
     "price": 35000,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774294643/superman-1.png",
-    "description": "Aquaman is midsize between batman and superman, full transparent body with the width of 85 cm and 205 cm height. Equipme...",
-    "description_th": "ซูเปอร์แมนเป็นเครื่องจักรขนาดกลางระหว่างแบทแมนและอควาแมน ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 85 ซม. สูง 205 ซม. มาพร้อมระบบไ...",
+    "description": "Superman is the largest of its kind, full transparent body with the width of 96 cm and 205 cm height. Equipment with bui...",
+    "description_th": "ซูเปอร์แมนเป็นเครื่องจักรที่ใหญ่ที่สุดในตระกูล ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 96 ซม. สูง 205 ซม. มาพร้อมระบบไวไฟในตัวที...",
     "stock_status": "3"
   },
   {
@@ -67,8 +67,8 @@
     "category": "Gashapon",
     "price": 28500,
     "main_image": "https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285868/new_gashapon_dim_4p.png",
-    "description": "Rapter 4 P comes with 4 compartment single pay point that can select any location from single panel. Suitable for more g...",
-    "description_th": "แร็ปเตอร์ 4P มาพร้อม 4 ช่อง จ่ายเงินครั้งเดียวสามารถเลือกหยิบจากตำแหน่งใดก็ได้จากแผงควบคุมเดียว เหมาะสำหรับรุ่นของเล่นที...",
+    "description": "Gashapon 4P comes with 4 compartment single pay point that can select any location from single panel. Suitable for more ...",
+    "description_th": "แกชาพอน 4P มาพร้อม 4 ช่อง จ่ายเงินครั้งเดียวสามารถเลือกหยิบจากตำแหน่งใดก็ได้จากแผงควบคุมเดียว เหมาะสำหรับรุ่นของเล่นที่ห...",
     "stock_status": "0"
   }
 ]
