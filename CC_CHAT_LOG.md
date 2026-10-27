@@ -1,7 +1,16 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.4 — 2026-10-26
-> Changes: CC_SESSION_daje_urls_fix_v1 deploy lesson entry (log only)
-> Previous: Version 1.3 — 2026-10-26
+> Version 1.5 — 2026-10-27
+> Changes: CC_SESSION_daje_csv_text_v1 entry added
+> Previous: Version 1.4 — 2026-10-26
+
+---
+
+## 2026-10-27 — CC_SESSION_daje_csv_text_v1
+**Did:** products.csv — 6 cells, byte-safe (BOM, LF, quoting kept): Aquaman ↔ Superman full_description and full_description_th swapped back; Aquaman Thai opening → "อควาแมนเป็นเครื่องจักรขนาดกลางระหว่างแบทแมนและซูเปอร์แมน"; Gashapon 4P "Rapter 4 P" → "Gashapon 4P", "แร็ปเตอร์ 4P" → "แกชาพอน 4P". feature_details (W85 / W96), prices and other rows untouched. PROJECT_STATE.md status words.
+**Updated:** NONE (no rule file)
+**New files:** NONE
+**Pending Chat verify:** Owner QA steps 1–8 after merge, a green "Daje Product Generator" run and Cloudflare deploy; owner corrects Airtable.
+**Flags:** DATA TEXT ONLY — no SEO change. NO injector change. Worker contract unchanged (DEP-7 not triggered). Generated pages/products.json not hand-edited (DEP-2). Raptor 3P tall/short unchanged (owner). QA CLOSE-OUT: daje_urls_fix_v1 → DONE (verified live 2026-10-27 — owner QA passed (6 live checks), per Chat); CC_SESSION_A_daje_restructure_v1 → DONE (verified live 2026-10-27 — fixed by CC_SESSION_daje_urls_fix_v1, owner QA passed, per Chat). NOT VERIFIED LIVE — owner QA steps 1–8.
 
 ---
 
