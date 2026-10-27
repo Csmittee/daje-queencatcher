@@ -68,6 +68,9 @@
         .stock-status.low-stock { background: rgba(255,152,0,0.1); color: #FF9800; }
         .features-section h3 { font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; }
         .features-list { white-space: pre-line; line-height: 1.5; color: #666; font-size: 0.8rem; }
+        .full-description { margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+        .full-description h3 { font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; font-weight: 700; }
+        .full-description p { white-space: pre-line; line-height: 1.5; color: #666; font-size: 0.85rem; }
         .color-options, .size-options { margin: 0.25rem 0; }
         .color-options h3, .size-options h3 { font-size: 0.8rem; margin-bottom: 0.4rem; }
         .color-swatches { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -176,6 +179,7 @@
         </div>
     </div>
     
+                <div class="full-description"><h3>รายละเอียดสินค้า</h3><p>อควาแมนเป็นเครื่องจักรขนาดกลางระหว่างแบทแมนและซูเปอร์แมน ตัวเครื่องโปร่งแสงทั้งหมด กว้าง 85 ซม. สูง 205 ซม. มาพร้อมระบบไวไฟในตัวที่สามารถควบคุมเมนบอร์ด จุดไฟ LED ทั้ง 9 จุด และแผงจอ LED ขนาดใหญ่ 2 จุด ทุกอย่างสามารถตั้งโปรแกรมได้ตามจินตนาการของคุณ ช่องขนาดใหญ่สามารถรับสิ่งของขนาดสูงสุด 18 นิ้ว อควาแมนมาพร้อมเมนบอร์ดที่ทันสมัยที่สุดพร้อมการควบคุมแรงหยิบ ความสูงในการหยิบ และการปล่อย ยังสามารถเล่นในโหมดกลุ่มซึ่งจะเพิ่มประสบการณ์ให้กับผู้ใช้ในศูนย์เกม ระบบปลอดภัยและเชื่อถือได้ผ่านการทดสอบนับพันชั่วโมง สามารถปรับแต่งตัวเครื่องและประเภทของเครนหยิบได้ อควาแมนเหมาะสำหรับศูนย์เกมสมัยใหม่ในปัจจุบัน เป็นขนาดที่ได้รับความนิยมมากที่สุดสำหรับศูนย์เกมเชิงพาณิชย์</p></div>
                 <div class="quantity-selector"><h3>Quantity</h3><div class="quantity-control"><button class="qty-btn" onclick="updateQuantity(-1)">-</button><input type="number" id="quantity" class="quantity-input" value="1" min="1" max="99" readonly><button class="qty-btn" onclick="updateQuantity(1)">+</button></div></div>
                 <div class="action-buttons"><button class="btn-add-to-cart" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button><button class="btn-wishlist" onclick="toggleWishlist(this)"><i class="far fa-heart"></i></button></div>
             </div>
@@ -207,6 +211,13 @@
             <div class="recommend-card-info">
                 <div class="recommend-card-name">แร็ปเตอร์ 3P เตี้ย</div>
                 <div class="recommend-card-price">27,300</div>
+            </div>
+        </div>
+        <div class="recommend-card" onclick="location.href='/th/product/gashapon-4p'">
+            <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285868/new_gashapon_dim_4p.png" class="recommend-card-image">
+            <div class="recommend-card-info">
+                <div class="recommend-card-name">แกชาพอน 4P</div>
+                <div class="recommend-card-price">28,500</div>
             </div>
         </div></div><div class="slider-nav"><button class="nav-btn" onclick="scrollSlider(-1)"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" onclick="scrollSlider(1)"><i class="fas fa-chevron-right"></i></button></div></div>
     </div>

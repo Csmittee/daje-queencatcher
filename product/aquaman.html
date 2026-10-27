@@ -68,6 +68,9 @@
         .stock-status.low-stock { background: rgba(255,152,0,0.1); color: #FF9800; }
         .features-section h3 { font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; }
         .features-list { white-space: pre-line; line-height: 1.5; color: #666; font-size: 0.8rem; }
+        .full-description { margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+        .full-description h3 { font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; font-weight: 700; }
+        .full-description p { white-space: pre-line; line-height: 1.5; color: #666; font-size: 0.85rem; }
         .color-options, .size-options { margin: 0.25rem 0; }
         .color-options h3, .size-options h3 { font-size: 0.8rem; margin-bottom: 0.4rem; }
         .color-swatches { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -176,6 +179,7 @@
         </div>
     </div>
     
+                <div class="full-description"><h3>Full Description</h3><p>Aquaman is midsize between batman and superman, full transparent body with the width of 85 cm and 205 cm height. Equipment with built in wifi system that can control mainboard, all 9 Led location and 2 large display led panel. All can be program to your imagination. The large compartment allow up to 18&quot; object catch. Aquaman comes with most advance mainboard with grab power, grab height, drop controls. Aquaman can also play as group play mode which will enhance user experience in game center System is safe and reliable with thousand of hours tested. Customization of body, claw crane type is also possible..Aquaman is suitable for advance modern game center today. It is the most favorite size for commercial game center.</p></div>
                 <div class="quantity-selector"><h3>Quantity</h3><div class="quantity-control"><button class="qty-btn" onclick="updateQuantity(-1)">-</button><input type="number" id="quantity" class="quantity-input" value="1" min="1" max="99" readonly><button class="qty-btn" onclick="updateQuantity(1)">+</button></div></div>
                 <div class="action-buttons"><button class="btn-add-to-cart" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button><button class="btn-wishlist" onclick="toggleWishlist(this)"><i class="far fa-heart"></i></button></div>
             </div>
@@ -207,6 +211,13 @@
             <div class="recommend-card-info">
                 <div class="recommend-card-name">Raptor 3P short</div>
                 <div class="recommend-card-price">27,300</div>
+            </div>
+        </div>
+        <div class="recommend-card" onclick="location.href='/product/gashapon-4p'">
+            <img src="https://res.cloudinary.com/dfiomi0lb/image/upload/v1774285868/new_gashapon_dim_4p.png" class="recommend-card-image">
+            <div class="recommend-card-info">
+                <div class="recommend-card-name">Gashapon 4P</div>
+                <div class="recommend-card-price">28,500</div>
             </div>
         </div></div><div class="slider-nav"><button class="nav-btn" onclick="scrollSlider(-1)"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" onclick="scrollSlider(1)"><i class="fas fa-chevron-right"></i></button></div></div>
     </div>
