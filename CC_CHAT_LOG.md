@@ -1,7 +1,16 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.5 — 2026-10-27
-> Changes: CC_SESSION_daje_csv_text_v1 entry added
-> Previous: Version 1.4 — 2026-10-26
+> Version 1.6 — 2026-10-27
+> Changes: CC_SESSION_daje_detail_page_v1 entry added
+> Previous: Version 1.5 — 2026-10-27
+
+---
+
+## 2026-10-27 — CC_SESSION_daje_detail_page_v1
+**Did:** scripts/generate_products.py (421→435L): `.full-description` block + CSS after the option selectors, before Quantity (Flow placement; text HTML-escaped, pre-line, not cut; EN "Full Description", TH "รายละเอียดสินค้า" — owner may change); generate_thumbnails skips .mp4/.webm/.mov/.m4v (Raptor 3P tall + short had all_mini_gashapon.mp4); "You May Also Like" [:4] limit removed → 5 cards each (Gashapon 4P was missing from 5 pages, Raptor 3P short from Gashapon's). Local run on a copy: 12 pages OK, head lines byte-identical, products.json unchanged.
+**Updated:** NONE (no rule file)
+**New files:** NONE
+**Pending Chat verify:** Owner QA steps 1–11 after merge, a green "Daje Product Generator" run and Cloudflare deploy. Owner decision on home cards / factory gallery.
+**Flags:** PAGE BODY ONLY — no SEO change. NO injector change. Worker contract unchanged (DEP-7 not triggered). Generated files not hand-edited (DEP-2). HTML-1: index.html 1185L / th/index.html 1105L — report only: cards show products.json `description` (120 chars + "...") cut again by truncateDescription to 100; "...read more" expands only to those 120 chars, so the full text never appears; card click opens /product/[slug]. Proposal: generator writes the full text to products.json (or "read more" links to the product page) — owner decides. "Our Factory": 9 hand-written gallery-item entries (not 6). Template drift vs Flow (besides the description): brand default, &#10024; vs ✨, cart key dajeCart/flowCart, &#3647; vs ฿ (Daje cart total shows literal "&#3647;" via innerText — bug, report only), quotation e-mail, scrollSlider without null check. Flow keeps [:4] too. No slider limit needed at 6 products. QA CLOSE-OUT: daje_csv_text_v1 → DONE (verified live 2026-10-27 — owner QA steps 1–8 passed, per Chat). NOT VERIFIED LIVE — owner QA steps 1–11.
 
 ---
 

@@ -13,6 +13,7 @@ import csv
 import json
 import re
 import shutil
+from html import escape
 from pathlib import Path
 
 def slugify(name):
@@ -42,13 +43,19 @@ def parse_color_swatches(colors_str, hex_str):
         }
         return [{'name': c, 'hex': default_colors.get(c, '#CCCCCC')} for c in colors]
 
+VIDEO_EXTENSIONS = ('.mp4', '.webm', '.mov', '.m4v')
+
+def is_video(url):
+    return url.split('?', 1)[0].lower().endswith(VIDEO_EXTENSIONS)
+
 def generate_thumbnails(gallery_images, main_image):
+    # Changed: skip video files — an .mp4 in gallery_images rendered as a broken <img> 2026-10-27
     thumbs = []
     all_images = [main_image] + gallery_images if gallery_images else [main_image]
     seen = set()
     unique_images = []
     for img in all_images:
-        if img and img not in seen:
+        if img and img not in seen and not is_video(img):
             seen.add(img)
             unique_images.append(img)
     for img in unique_images:
@@ -90,11 +97,13 @@ def generate_size_options(sizes):
 
 def generate_product_page(product, all_products, lang='en'):
     # Changed: extensionless og:url + rec card links; canonical added 2026-10-26
+    # Changed: full description block; "You May Also Like" lists all other products 2026-10-27
     """Generate compact product detail page with close button"""
 
     if lang == 'th':
         name = product.get('name_th', product['name'])
         description = product.get('full_description_th', product['full_description'])
+        description_heading = 'รายละเอียดสินค้า'
         lang_prefix = '/th'
         stock_labels = {'In Stock': 'มีสินค้า', 'Low Stock': 'สินค้าใกล้หมด', 'Out of Stock': 'สินค้าหมด', 'Pre-order': 'สั่งจองล่วงหน้า'}
         stock_status_text = stock_labels.get(product['stock_status'], product['stock_status'])
@@ -103,6 +112,7 @@ def generate_product_page(product, all_products, lang='en'):
     else:
         name = product['name']
         description = product['full_description']
+        description_heading = 'Full Description'
         lang_prefix = ''
         stock_status_text = product['stock_status']
         back_link = 'https://daje.janishammer.com/'
@@ -121,7 +131,7 @@ def generate_product_page(product, all_products, lang='en'):
     price_value = int(float(product['price'])) if product.get('price') else 0
 
     product_id = product.get('id', '')
-    recommendations = [p for p in all_products if p.get('id', '') != product_id][:4]
+    recommendations = [p for p in all_products if p.get('id', '') != product_id]
 
     rec_html = ''
     for rec in recommendations:
@@ -209,6 +219,9 @@ def generate_product_page(product, all_products, lang='en'):
         .stock-status.low-stock {{ background: rgba(255,152,0,0.1); color: #FF9800; }}
         .features-section h3 {{ font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; }}
         .features-list {{ white-space: pre-line; line-height: 1.5; color: #666; font-size: 0.8rem; }}
+        .full-description {{ margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }}
+        .full-description h3 {{ font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; font-weight: 700; }}
+        .full-description p {{ white-space: pre-line; line-height: 1.5; color: #666; font-size: 0.85rem; }}
         .color-options, .size-options {{ margin: 0.25rem 0; }}
         .color-options h3, .size-options h3 {{ font-size: 0.8rem; margin-bottom: 0.4rem; }}
         .color-swatches {{ display: flex; gap: 0.5rem; flex-wrap: wrap; }}
@@ -289,6 +302,7 @@ def generate_product_page(product, all_products, lang='en'):
                 <div class="features-section"><h3>Specifications</h3><div class="features-list">{feature_details_raw}</div></div>
                 {generate_color_options(colors_data)}
                 {generate_size_options(sizes)}
+                <div class="full-description"><h3>{description_heading}</h3><p>{escape(description)}</p></div>
                 <div class="quantity-selector"><h3>Quantity</h3><div class="quantity-control"><button class="qty-btn" onclick="updateQuantity(-1)">-</button><input type="number" id="quantity" class="quantity-input" value="1" min="1" max="99" readonly><button class="qty-btn" onclick="updateQuantity(1)">+</button></div></div>
                 <div class="action-buttons"><button class="btn-add-to-cart" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button><button class="btn-wishlist" onclick="toggleWishlist(this)"><i class="far fa-heart"></i></button></div>
             </div>
