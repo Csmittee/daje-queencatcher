@@ -1,7 +1,18 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.6 — 2026-10-27
-> Changes: CC_SESSION_daje_detail_page_v1 entry added
-> Previous: Version 1.5 — 2026-10-27
+> Version 1.7 — 2026-10-28
+> Changes: CC_SESSION_daje_sitemap_robots_v1 entry added
+> Previous: Version 1.6 — 2026-10-27
+
+---
+
+## 2026-10-28 — CC_SESSION_daje_sitemap_robots_v1
+**Did:** scripts/generate_products.py — generate_sitemap() + call: the page loop records (slug, TH written) and sitemap.xml lists 2 homes + every written EN/TH product page by its canonical (EN home, TH home, EN by slug, TH by slug), en/th/x-default alternates only when both pages exist; page output unchanged (local run: no product page / products.json diff; sitemap identical on rerun). products-build.yml — `git add` line only (+ sitemap.xml). robots.txt new. sitemap.xml 14 URLs. PROJECT_STATE.md, CLAUDE.md.
+**Updated:** NONE here (DEP-2 daje list updated in janishammer-central)
+**New files:** robots.txt, sitemap.xml
+**Pending Chat verify:** Owner QA steps 1–10 after merge and a green "Daje Product Generator" run; owner submits the sitemap in Search Console.
+**Flags:** SEO CHANGED. WF-3 EXCEPTION — one pipeline: Daje sitemap generator + workflow commit step + robots.txt. NO injector change. Worker contract unchanged (DEP-7 not triggered). HTML-1 — index.html (1185L) / th/index.html (1105L) not edited. Scan: 6 products, all with a TH page (TH condition: name_th and full_description_th set); 14 pages with one canonical each, 404.html noindex (not listed); slugs in products.json = file names; _redirects has no rule for /sitemap.xml or /robots.txt; no _headers. Report only: hreflang, og:type, twitter tags in the HTML still missing (paused); SEO-5 scope line does not list Daje or Flow (RETROFIT #26); generator meta description still a hard [:150] cut with no escaping (Flow fixed this 2026-10-28 — later order). NOT VERIFIED LIVE — owner QA steps 1–10. PARTIAL — Search Console sitemap submit + request indexing (owner task).
+**Previous PR QA:** janishammer-home#5 INCOMPLETE (steps 1–10 PASS, ALL DONE not ticked — QA CARRY-OVER in the prompt) + janishammer-central#23 PASS (steps 1–10 PASS + ALL DONE) — read with REST 2026-10-28, no QA-FAIL
+**Owner QA:** daje-queencatcher#8 + janishammer-central#24 PENDING (steps 1–10)
 
 ---
 

@@ -373,6 +373,41 @@ def generate_products_json(products):
     print(f"✅ Generated products.json ({len(json_data)} products)")
 
 
+SITE_URL = 'https://daje.janishammer.com'
+
+# Changed: sitemap.xml written from the same loop that writes the pages 2026-10-28
+def generate_sitemap(written):
+    """written: list of (slug, has_th) for every EN page written; has_th = TH page written too"""
+    def url_block(loc, en_url, th_url):
+        lines = ['  <url>', f'    <loc>{loc}</loc>']
+        if th_url:
+            lines += [f'    <xhtml:link rel="alternate" hreflang="en" href="{en_url}"/>',
+                      f'    <xhtml:link rel="alternate" hreflang="th" href="{th_url}"/>',
+                      f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}"/>']
+        lines.append('  </url>')
+        return '\n'.join(lines)
+
+    home_en, home_th = f"{SITE_URL}/", f"{SITE_URL}/th/"
+    blocks = [url_block(home_en, home_en, home_th), url_block(home_th, home_en, home_th)]
+    pages = sorted(written)
+    for slug, has_th in pages:
+        en_url = f"{SITE_URL}/product/{slug}"
+        blocks.append(url_block(en_url, en_url, f"{SITE_URL}/th/product/{slug}" if has_th else ''))
+    for slug, has_th in pages:
+        if has_th:
+            en_url, th_url = f"{SITE_URL}/product/{slug}", f"{SITE_URL}/th/product/{slug}"
+            blocks.append(url_block(th_url, en_url, th_url))
+
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+           'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+           + '\n'.join(blocks) + '\n</urlset>\n')
+    with open(Path(__file__).parent.parent / 'sitemap.xml', 'w', encoding='utf-8') as f:
+        f.write(xml)
+    print(f"✅ Generated sitemap.xml ({len(blocks)} URLs: 2 home, {len(pages)} EN, "
+          f"{sum(1 for _, t in pages if t)} TH product pages)")
+
+
 def main():
     csv_path = Path(__file__).parent.parent / 'products.csv'
 
@@ -409,13 +444,16 @@ def main():
     print(f"\U0001f4e6 Loaded {len(products)} products from CSV")
     generate_products_json(products)
 
+    written = []  # (slug, has_th) for the sitemap
     for product in products:
+        en_written = th_written = False
         try:
             # English page -> product/[slug].html
             en_html = generate_product_page(product, products, lang='en')
             en_path = en_product_dir / f"{slugify(product['name'])}.html"
             with open(en_path, 'w', encoding='utf-8') as f:
                 f.write(en_html)
+            en_written = True
             print(f"✅ Generated: {en_path}")
 
             # Thai page -> th/product/[slug].html (if Thai content exists)
@@ -424,9 +462,14 @@ def main():
                 th_path = th_product_dir / f"{slugify(product['name'])}.html"
                 with open(th_path, 'w', encoding='utf-8') as f:
                     f.write(th_html)
+                th_written = True
                 print(f"✅ Generated: {th_path}")
         except Exception as e:
             print(f"❌ Error generating {product.get('name', 'unknown')}: {e}")
+        if en_written:
+            written.append((slugify(product['name']), th_written))
+
+    generate_sitemap(written)
 
     print("\n\U0001f389 All product pages generated successfully!")
 
