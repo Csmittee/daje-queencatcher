@@ -235,6 +235,7 @@
             margin-bottom: 0.5rem;
             line-height: 1.3;
         }
+        .product-link { color: inherit; text-decoration: none; }
         
         .product-price {
             font-size: 1.8rem;
@@ -1111,7 +1112,7 @@
             }
         }
         
-        // Changed: product URL extensionless → /product/[slug] 2026-10-26
+        // Changed: product links and add-to-cart set from JavaScript, no template text in the page source 2026-11-10
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
@@ -1132,22 +1133,42 @@
                 const shortDesc = truncateDescription(rawDesc, 100);
                 const hasMore = rawDesc && rawDesc.length > 100;
                 return `
-                <div class="product-card" onclick="location.href='${langPrefix}/product/${slugify(p.name)}'">
-                    <img src="${p.main_image}" class="product-image" alt="${displayName}">
+                <div class="product-card" data-slug="${slugify(p.name)}">
+                    <img data-img="${p.main_image}" class="product-image" alt="${displayName}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status || 'Pre-order'}</div>
-                        <div class="product-name">${displayName}</div>
+                        <div class="product-name"><a class="product-link">${displayName}</a></div>
                         <div class="product-price">${p.price.toLocaleString()}</div>
                         <div class="product-desc" onclick="event.stopPropagation(); this.classList.add('expanded')">
                             ${shortDesc}
                             ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')" > ...read more</span>' : ''}
                         </div>
-                        <button class="view-details" onclick="event.stopPropagation(); addToCart({id:'${p.id}', name:'${p.name}', price:${p.price}, image:'${p.main_image}'})">
+                        <button class="view-details" data-add="${p.id}">
                             <i class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
                     </div>
                 </div>
             `}).join('');
+            grid.querySelectorAll('.product-card').forEach(card => {
+                const img = card.querySelector('img[data-img]');
+                if (img) img.src = img.dataset.img;
+                const a = card.querySelector('a.product-link');
+                if (a) a.href = langPrefix + '/product/' + card.dataset.slug;
+            });
+            if (!grid.dataset.linksWired) {
+                grid.dataset.linksWired = '1';
+                grid.addEventListener('click', e => {
+                    const btn = e.target.closest('button[data-add]');
+                    if (btn) {
+                        const p = products.find(x => String(x.id) === btn.dataset.add);
+                        if (p) addToCart({id: String(p.id), name: p.name, price: p.price, image: p.main_image});
+                        return;
+                    }
+                    if (e.target.closest('a')) return;
+                    const card = e.target.closest('.product-card');
+                    if (card) location.href = langPrefix + '/product/' + card.dataset.slug;
+                });
+            }
         }
         
         // Gallery scroll function
