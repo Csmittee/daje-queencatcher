@@ -1,8 +1,19 @@
 # CC_CHAT_LOG.md — daje-queencatcher
-> Version 1.7 — 2026-10-28
-> Changes: CC_SESSION_daje_sitemap_robots_v1 entry added
-> Previous: Version 1.6 — 2026-10-27
+> Version 1.8 — 2026-11-10
+> Changes: CC_SESSION_template_link_cleanup_v1 entry added
+> Previous: Version 1.7 — 2026-10-28 (CC_SESSION_daje_sitemap_robots_v1 entry added). Earlier: Version 1.6 — 2026-10-27
 
+---
+
+## 2026-11-10 — CC_SESSION_template_link_cleanup_v1
+**Did:** index.html and th/index.html, renderProducts() + one CSS line (.product-link): cards carry data-slug; card image src and name-anchor href set from JavaScript (langPrefix kept: /product/ EN, /th/product/ TH); one click listener on the grid opens the product page and runs Add to Cart with the same item data as before; the product name is now a real anchor styled like before. 0 matches for `/product/${`, `/th/product/${`, `${langPrefix}/product/`. Page-run check (headless Chromium, real files): 6 cards, clean hrefs, card/name click and add-to-cart OK in EN + TH. Diffstat 31 / 34 lines. PROJECT_STATE, this log. Generator, product pages, products.csv/json, sitemap, robots, _redirects, workflow, head untouched.
+**Updated:** NONE (no rule file in this repo)
+**New files:** NONE
+**Pending Chat verify:** owner QA steps 3–4 (listed in janis-flow#3) after the merge and the Cloudflare redeploy; decide whether a later order should also remove `${` from the cart drawer and quotation mail lines (report only: index.html 1032, 1038, 1040, 1041, 1099; th/index.html 959, 965, 967, 968, 1026 — not product addresses, left unchanged).
+**Flags:** WF-3 EXCEPTION — one identical fault across two repos (Flow + Daje, one order). HTML-1 — files over 800 lines edited without a split, owner approved 2026-11-10 (index.html 1185→1206, th/index.html 1105→1129). NOT VERIFIED LIVE — owner QA steps 1–5. NO injector change; worker contract unchanged (DEP-7 not triggered); products-build.yml only runs for products.csv / generate_products.py.
+**Next steps:** none for Daje (paused, follow-up 2027-01-04); Chat reads the next Search Console export (the 404 and `.html` `${slugify(p.name)}` addresses).
+**Previous PR QA:** daje-queencatcher#8 + janishammer-central#24 PASS (ledger: central#24 steps 1–10 PASS + ALL DONE; daje#8 box not readable from CC sessions).
+**Owner QA:** n/a — covered by janis-flow#3
 ---
 
 ## 2026-10-28 — CC_SESSION_daje_sitemap_robots_v1
