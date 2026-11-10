@@ -215,6 +215,7 @@
             flex-direction: column;
         }
         
+        .product-link { color: inherit; text-decoration: none; }
         .product-name {
             font-size: 1.4rem;
             font-weight: 800;
@@ -1038,7 +1039,7 @@
             }
         }
         
-        // Changed: product URL extensionless → /th/product/[slug] 2026-10-26
+        // Changed: product links and add-to-cart set from JavaScript, no template text in the page source 2026-11-10
         function renderProducts() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
@@ -1054,22 +1055,45 @@
                 const shortDesc = truncateDescription(thaiDesc, 100);
                 const hasMore = thaiDesc && thaiDesc.length > 100;
                 return `
-                <div class="product-card" onclick="location.href='/th/product/${slugify(p.name)}'">
-                    <img src="${p.main_image}" class="product-image" alt="${thaiName}">
+                <div class="product-card" data-slug="${slugify(p.name)}">
+                    <img data-img="${p.main_image}" class="product-image" alt="${thaiName}">
                     <div class="product-info">
                         <div class="stock-badge">${p.stock_status === 'Pre-order' ? 'สั่งจองล่วงหน้า' : (p.stock_status === 'In Stock' ? 'มีสินค้า' : 'สินค้าหมด')}</div>
-                        <div class="product-name">${thaiName}</div>
+                        <div class="product-name"><a class="product-link">${thaiName}</a></div>
                         <div class="product-price">${p.price.toLocaleString()}</div>
                         <div class="product-desc" onclick="event.stopPropagation(); this.classList.add('expanded')">
                             ${shortDesc}
                             ${hasMore ? '<span class="read-more" onclick="event.stopPropagation(); this.parentElement.classList.toggle(\'expanded\')" > ...อ่านเพิ่มเติม</span>' : ''}
                         </div>
-                        <button class="view-details" onclick="event.stopPropagation(); addToCart({id:'${p.id}', name:'${thaiName}', name_th:'${thaiName}', price:${p.price}, image:'${p.main_image}'})">
+                        <button class="view-details" data-add="${p.id}">
                             <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
                         </button>
                     </div>
                 </div>
             `}).join('');
+            grid.querySelectorAll('.product-card').forEach(card => {
+                const img = card.querySelector('img[data-img]');
+                if (img) img.src = img.dataset.img;
+                const a = card.querySelector('a.product-link');
+                if (a) a.href = '/th/product/' + card.dataset.slug;
+            });
+            if (!grid.dataset.linksWired) {
+                grid.dataset.linksWired = '1';
+                grid.addEventListener('click', e => {
+                    const btn = e.target.closest('button[data-add]');
+                    if (btn) {
+                        const p = products.find(x => String(x.id) === btn.dataset.add);
+                        if (p) {
+                            const thaiName = p.name_th || p.name;
+                            addToCart({id: String(p.id), name: thaiName, name_th: thaiName, price: p.price, image: p.main_image});
+                        }
+                        return;
+                    }
+                    if (e.target.closest('a')) return;
+                    const card = e.target.closest('.product-card');
+                    if (card) location.href = '/th/product/' + card.dataset.slug;
+                });
+            }
         }
         
         function scrollGallery(direction) {
